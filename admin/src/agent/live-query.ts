@@ -35,10 +35,17 @@ export function subscribeAgentMessages(
       })
       if (!resp.ok) return
       const data = await resp.json()
-      const rows: AgentMessage[] = Array.isArray(data) ? (data[0]?.result || []) : []
+      // Safe unwrap: SDB REST /sql returns [{result: [...], status: "OK"}]
+      let rows: AgentMessage[] = []
+      try {
+        const raw = Array.isArray(data) ? (data[0]?.result) : data
+        rows = Array.isArray(raw) ? raw : []
+      } catch {
+        rows = []
+      }
       if (rows.length > 0) callback(rows)
     } catch (err) {
-      // Silently ignore poll errors — agent_message table may not have results yet
+      console.error('[live-query] poll error:', (err as Error)?.message || err)
     }
     if (!stop) {
       timeoutId = setTimeout(poll, 2000)

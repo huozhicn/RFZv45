@@ -18,6 +18,7 @@ import {
   NMessageProvider, NDialogProvider, useMessage
 } from 'naive-ui'
 import type { MenuOption } from 'naive-ui'
+import { onErrorCaptured } from 'vue'
 import SchemaTable from '@/controls/SchemaTable.vue'
 import DetailPanel from '@/controls/DetailPanel.vue'
 import LoginView from '@/views/LoginView.vue'
@@ -74,12 +75,22 @@ interface ChatMsg {
   timestamp: string
 }
 
+// ── Error boundary ──
+const appError = ref('')
+onErrorCaptured((err: any) => {
+  console.error('[App] unhandled error:', err)
+  appError.value = String(err?.message || err)
+  return false // prevent propagation
+})
+
 // ── Schema 加载 ──
 watch(() => auth.isAuthenticated, (authed) => {
   if (authed) {
     loadSchemaMeta(query).then(meta => {
       schemaMeta.value = meta
       buildMenu()
+    }).catch((err: any) => {
+      console.error('[App] loadSchemaMeta failed:', err.message)
     })
   }
 }, { immediate: true })
@@ -198,6 +209,15 @@ watch(() => auth.token, (tok) => {
 <template>
   <n-message-provider>
     <n-dialog-provider>
+      <!-- Fatal error boundary -->
+      <div v-if="appError" style="padding:40px;text-align:center;color:#d93025">
+        <div style="font-size:48px;margin-bottom:16px">⚠️</div>
+        <div style="font-size:18px;font-weight:600">应用加载出错</div>
+        <div style="color:#999;margin-top:8px;font-size:13px">{{ appError }}</div>
+        <n-button style="margin-top:16px" @click="appError='';location.reload()">重试</n-button>
+      </div>
+
+      <template v-else>
       <LoginView v-if="!auth.isAuthenticated" />
 
       <!-- ChatGPT 风格布局 -->
@@ -343,6 +363,7 @@ watch(() => auth.token, (tok) => {
         @saved="handleDetailClose"
         @deleted="handleDetailClose"
       />
+      </template>
     </n-dialog-provider>
   </n-message-provider>
 </template>
