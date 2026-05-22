@@ -6,7 +6,11 @@ function escapeVal(v: unknown): string {
   if (v === null || v === undefined) return 'NONE'
   if (typeof v === 'boolean') return v ? 'true' : 'false'
   if (typeof v === 'number') return String(v)
-  if (typeof v === 'string') return `'${v.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`
+  if (typeof v === 'string') {
+    // Record IDs (e.g. 'user:admin', 'tenant:abc') must NOT be quoted
+    if (/^\w+:\w+/.test(v)) return v
+    return `'${v.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`
+  }
   return String(v)
 }
 
