@@ -33,15 +33,14 @@ const version = __COMMIT_HASH__
       </n-layout-sider>
 
       <n-layout>
-        <n-layout-content>
-          <div style="display:flex;flex-direction:column;height:100%">
-          <div style="flex:1;padding:40px 24px;text-align:center;color:#999;overflow-y:auto">
+        <n-layout-content style="position:relative;padding-bottom:72px">
+          <div style="padding:40px 24px;min-height:calc(100vh - 72px);text-align:center;color:#999">
             <div style="font-size:48px;margin-bottom:16px">💬</div>
             <div style="font-size:18px;font-weight:600;color:#666">对话即操作</div>
             <div style="font-size:14px;margin-top:8px">在下方输入指令</div>
           </div>
 
-          <div style="border-top:1px solid #e0e0e0;padding:12px 24px;background:#fff;display:flex;gap:8px;align-items:flex-end;flex-shrink:0">
+          <div style="position:absolute;bottom:0;left:0;right:0;border-top:1px solid #e0e0e0;padding:12px 24px;background:#fff;display:flex;gap:8px;align-items:flex-end">
             <n-input
               v-model:value="inputText"
               type="textarea"
@@ -52,7 +51,6 @@ const version = __COMMIT_HASH__
               round
             />
             <n-button type="primary" size="large" style="border-radius:20px;min-width:80px">发送</n-button>
-          </div>
           </div>
         </n-layout-content>
       </n-layout>
