@@ -1,0 +1,273 @@
+# RFZv45 设计文档
+
+## 为什么不是 v4 的延续
+
+RFZv4 走了 11 个 Phase，写了几十个 .vue 文件，每次改一行 SQL 要 grep 全局修 16 处。
+前端代码量指数增长，Agent token 大量浪费在 UI 胶水代码上。
+
+**RFZv4 的架构本质是把 SurrealDB 当成远程 MySQL，把 Vue 页面当成存储过程。**
+
+v45 推翻这个模型。前端从 54 个手写 CRUD 页面砍成 **3 个控件**。
+
+---
+
+## 三大核心原则
+
+### 1. SDB = 唯一真相源 + Data Hub
+
+```
+┌─────────────────────────────────────────────────────┐
+│                   SurrealDB                          │
+│                                                      │
+│  • Schema 定义（表结构、字段类型、枚举、关联）            │
+│  • 业务逻辑（FUNCTION、EVENT）                         │
+│  • 权限系统（PERMISSIONS、ACCESS）                     │
+│  • 对话消息（agent_message 表）                        │
+│  • 消息预处理（fn::agent_payload）                     │
+│  • 实时推送（LIVE QUERY）                              │
+│                                                      │
+│        ↗ Admin 前端（只读 + 展示）                      │
+│        ↗ H5 用户端（只读 + 展示）                       │
+│        ↗ Hermes Agent（理解意图 + 执行操作）            │ 
+│        ↗ 外部系统（Webhook、API）                       │
+└─────────────────────────────────────────────────────┘
+```
+
+Schema 文件（.surql）是唯一被修改的源文件。所有变更先改 schema、commit、再导入 VPS。
+
+### 2. 对话是第一公民
+
+传统 ERP 的数据是「填出来」的——表单 → 表记录。
+
+RFZv45 的数据是「说出来」的——对话 → SDB → 表记录。
+
+```
+用户: "新建客户张三，居士，普通，13800001111"
+         │
+         ▼ INSERT INTO agent_message
+    SDB EVENT 触发
+         │
+         ▼ fn::agent_payload() 注入权限上下文
+    { user_input, auth: { role, tenant, store, user_id } }
+         │
+         ▼ POST Hermes webhook
+    Agent 理解意图 → CREATE customer CONTENT { name: '张三', ... }
+         │
+         ▼ UPDATE agent_message SET response=..., status='done'
+         │
+         ▼ LIVE QUERY 推给前端
+    Chat 面板展示结果 + 可选 actions
+```
+
+**每一句话都存进 SDB。** 全链路可追溯。Hermes 下线重连后扫 `SELECT * FROM agent_message WHERE status='pending'` 补处理。
+
+### 3. Agent 驱动一切，前端只管展示
+
+Agent 返回的不是纯文本，是**操作序列**：
+
+```json
+{
+  "reply": "已为你打开书院旗舰店库存。3 个商品低于安全线。",
+  "actions": [
+    { "type": "navigate", "route": "/tables/store_inventory", "params": { "store": "书院旗舰店" } },
+    { "type": "filter", "field": "store.name", "value": "书院旗舰店" },
+    { "type": "highlight", "row_ids": ["si:001", "si:007"] }
+  ]
+}
+```
+
+前端 Chat 控件的 action dispatcher 执行这些指令：导航、筛选、高亮、打开详情、下载 CSV。
+
+---
+
+## 三个核心控件
+
+### 1. SchemaTable
+
+零配置表格。启动时调 `INFO FOR DB`，拿到所有表的字段定义、类型、断言。
+
+| SDB 类型 | 表格行为 |
+|----------|---------|
+| `string` | 文本列，可搜索 |
+| `int / float / decimal` | 数字列，右对齐 |
+| `datetime` | 格式化为日期，可排序 |
+| `bool` | ✓/✗ 图标 |
+| `record<T>` | 显示关联记录 name（FETCH 一级） |
+| `array<float>` | 隐藏 |
+| 字段名 `_` 开头 | 隐藏 |
+
+路由统一为 `/tables/:tableName`。PERMISSIONS 控制谁能看到哪个表。
+
+Agent action 控制表格行为：
+- `filter` → 前端本地筛选
+- `highlight` → 行变色
+- `refresh` → 重新加载
+- `download` → 导出 CSV
+
+### 2. DetailPanel
+
+侧边滑出面板。点行展开详情/编辑。字段 → 控件自动映射：
+
+```
+string     → Input
+text       → Textarea
+int/float  → InputNumber
+datetime   → DatePicker
+bool       → Switch
+enum       → Select（从 ASSERT $value INSIDE [...] 提取）
+record<T>  → Select（异步搜索关联表）
+```
+
+新建/编辑/删除按钮可见性由 PERMISSIONS（FOR create/update/delete）决定。
+
+### 3. ChatPanel
+
+底部常驻对话面板。整个 Admin 的指挥中心：
+
+| 用户输入 | Agent action |
+|----------|-------------|
+| 「看库存」 | `navigate → /tables/store_inventory` |
+| 「新建客户张三」 | `navigate → /tables/customer` + `open_create` + 预填 |
+| 「书院旗舰店库存低于 5」 | `navigate` + `filter` + `highlight` |
+| 「上月销售额」 | `data` 卡片（不导航，直接展示） |
+| 「把这条订单取消」 | `confirm → 执行 UPDATE → refresh` |
+
+---
+
+## Agent 通信协议
+
+### 表：agent_message
+
+```sql
+DEFINE TABLE agent_message SCHEMAFULL;
+
+DEFINE FIELD user_input ON agent_message TYPE string;
+DEFINE FIELD response    ON agent_message TYPE option<string>;
+DEFINE FIELD actions     ON agent_message TYPE option<array<object>>;
+DEFINE FIELD status      ON agent_message TYPE string 
+  ASSERT $value INSIDE ['pending', 'processing', 'done', 'error'];
+DEFINE FIELD session_id  ON agent_message TYPE string;
+DEFINE FIELD created_by  ON agent_message TYPE record<user>;
+DEFINE FIELD created_at  ON agent_message TYPE datetime DEFAULT time::now();
+```
+
+### SDB 预处理函数
+
+```sql
+DEFINE FUNCTION fn::agent_payload($msg_id: record<agent_message>) {
+  LET $msg = (SELECT id, user_input, session_id, created_by FROM agent_message WHERE id = $msg_id)[0];
+  LET $u = (SELECT id, name, current_role, current_tenant FROM user WHERE id = $msg.created_by)[0];
+  LET $store = IF $u.current_role IN ['门店店长','店员'] THEN
+    (SELECT VALUE ->membership.store[0] FROM user WHERE id = $msg.created_by)
+  ELSE NONE END;
+  
+  RETURN {
+    user_input: $msg.user_input,
+    message_id: $msg.id,
+    session_id: $msg.session_id,
+    auth: {
+      role: $u.current_role,
+      tenant: $u.current_tenant,
+      store: $store,
+      user_id: $u.id,
+      user_name: $u.name
+    }
+  };
+};
+```
+
+### Agent Action 类型
+
+```typescript
+type AgentAction =
+  | { type: 'navigate'; route: string; params?: Record<string, string> }
+  | { type: 'filter'; field: string; value: string }
+  | { type: 'highlight'; row_ids: string[] }
+  | { type: 'open_detail'; record_id: string }
+  | { type: 'open_create'; table: string; prefill?: Record<string, any> }
+  | { type: 'data'; title: string; columns: ColumnDef[]; rows: any[] }
+  | { type: 'confirm'; message: string; on_confirm: { sql: string } }
+  | { type: 'download'; format: 'csv' | 'pdf'; sql: string }
+  | { type: 'refresh' }
+  | { type: 'reply'; text: string }
+
+type AgentResponse = {
+  message_id: string
+  status: 'done' | 'error'
+  reply: string
+  actions: AgentAction[]
+}
+```
+
+---
+
+## 与 RFZv4 的关系
+
+| | v4 | v45 |
+|---|---|---|
+| 前端页面 | 54 个手写 .vue 文件 | 3 个控件 |
+| SQL 位置 | 散落在每个 .vue 里 | Agent 生成 |
+| 路由 | 手写 50+ 条 | `/tables/:tableName` |
+| 菜单 | 手写角色过滤 | 从 PERMISSIONS 自动生成 |
+| 表单 | 每个页面手写控件+校验 | 从 schema 字段类型自动映射 |
+| 枚举值 | 前端和后端各写一遍 | ASSERT 定义 → 自动提取 |
+| 权限 | auth.ts canCreate 硬编码 | SDB PERMISSIONS 驱动 |
+| 部署 | shell 脚本引号地狱 | 代码量砍 90% |
+| 数据入口 | 表单 | 对话 |
+| 追溯性 | created_by 字段 | 全对话链路可查 |
+
+---
+
+## 目录结构
+
+```
+RFZv45/
+├── DESIGN.md              ← 本文件
+├── AGENTS.md              ← Agent 工作指令
+├── README.md              ← 项目说明
+├── schema/                ← SDB schema（唯一真相源）
+│   ├── 00-init.surql
+│   ├── 01-identity.surql
+│   ├── 02-tenant.surql
+│   ├── 03-product.surql
+│   ├── 04-product-selection.surql
+│   ├── 05-inventory.surql
+│   ├── 06-order.surql
+│   ├── 07-crm.surql
+│   ├── 08-activity.surql
+│   ├── 09-finance.surql
+│   ├── 10-commission.surql
+│   ├── 11-h5-user.surql
+│   ├── 12-h5-content.surql
+│   ├── 13-dharma-event.surql
+│   ├── 14-docs.surql
+│   ├── 15-functions.surql
+│   ├── 16-events.surql
+│   ├── 17-permissions.surql
+│   ├── 18-access.surql
+│   ├── 20-agent.surql       ← 新增：agent_message 表 + fn::agent_payload
+│   └── import-schema.sh
+├── admin/                   ← 新 Admin 前端
+│   ├── index.html
+│   ├── vite.config.ts
+│   ├── src/
+│   │   ├── main.ts
+│   │   ├── App.vue
+│   │   ├── controls/
+│   │   │   ├── SchemaTable.vue
+│   │   │   ├── DetailPanel.vue
+│   │   │   └── ChatPanel.vue
+│   │   ├── agent/
+│   │   │   ├── types.ts      ← AgentAction / AgentResponse 类型
+│   │   │   ├── dispatcher.ts ← action 分发器
+│   │   │   └── live-query.ts ← LIVE QUERY 封装
+│   │   ├── stores/
+│   │   │   └── auth.ts       ← 从 v4 迁移
+│   │   └── lib/
+│   │       └── schema.ts     ← INFO FOR DB → 字段映射
+│   └── config/
+│       └── rufazao.ts
+├── deploy.sh
+└── seeds/                    ← 种子数据
+    └── 00-bootstrap.surql
+```

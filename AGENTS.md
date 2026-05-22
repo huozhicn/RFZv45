@@ -1,0 +1,127 @@
+# AGENTS.md — RFZv45 Agent 工作指令
+
+## 🚨 最高原则：Schema 是唯一真相源
+
+**schema/ 目录下的 .surql 文件是唯一被修改的源文件。**
+
+1. 任何 DB 结构变更 → **先改本地 .surql** → git commit → 再导入 VPS
+2. **绝对禁止在 VPS 上直接用 surreal sql 改表结构**
+3. 调试时不得已临时改了 VPS → **立刻回写到本地 .surql 并 commit**
+
+---
+
+## 环境速查
+
+| 环境 | 地址 | 说明 |
+|------|------|------|
+| VPS | 212.64.90.2 | SSH: ubuntu / sFM@0@LhTY#Oi& |
+| SDB | http://127.0.0.1:8000 | root/root, ns=huozhi, db=rfzv45 |
+| Admin | https://admin.rufazao.com | Caddy → 前端静态文件 |
+| Hermes Webhook | http://localhost:PORT/webhooks/rfzv4-chat | Agent 接收消息的端点 |
+
+---
+
+## 架构概要
+
+**前端只需要做 3 件事：渲染表格、展示详情、收发对话。** Agent 负责理解意图和执行操作。
+
+```
+用户输入 → agent_message 表 → SDB EVENT → Hermes Webhook → Agent 处理 → 回写 SDB
+                                                                              ↓
+前端 Chat 控件 ← LIVE QUERY ← agent_message.response
+前端表格    ← Agent action: navigate / filter / highlight
+```
+
+详细设计见 `DESIGN.md`。
+
+---
+
+## SDB 避坑知识（从 v4 继承）
+
+### 🔥 ALTER TABLE PERMISSIONS 互相覆盖
+对同一张表分别执行 `FOR select` / `FOR create` 会互相覆盖。
+**必须合并为一条语句。** 参见 17-permissions.surql。
+
+### 🔥 FETCH 语法：ORDER BY 必须在 FETCH 之前
+```sql
+-- ✅ 正确
+SELECT * FROM store_inventory ORDER BY store.name FETCH variant, store;
+-- ❌ 错误（400 parse error）
+SELECT * FROM store_inventory FETCH variant ORDER BY store.name;
+```
+
+### 🔥 别名 + FETCH 不兼容
+需要 FETCH 才能解析的嵌套字段不能用 `AS` 别名——别名在 FETCH 前求值。
+```sql
+-- ❌ product_name 永远是 null
+SELECT *, spu.name AS product_name FROM product_variant FETCH spu;
+-- ✅ 前端用 row.spu?.name
+SELECT * FROM product_variant FETCH spu;
+```
+
+### 🔥 `surreal sql --multi` 不共享 LET 变量
+批量操作需要 LET 变量传递 → 用交互模式（heredoc 管道）。
+
+### SCHEMAFULL 表必须填满所有必填字段
+CREATE CONTENT 必须包含所有无 DEFAULT 的字段。用 `INFO FOR TABLE` 查定义。
+
+### SDB 3.0.6 Bug: INFO FOR TABLE 不报告 ALTER TABLE 权限
+`permissions` 字段始终 `MISSING`。判断权限是否生效 → 用 scope token 实际查询。
+
+---
+
+## agent_message 通信协议
+
+### 发消息（前端 → SDB）
+
+```sql
+INSERT INTO agent_message {
+  user_input: $msg,
+  status: 'pending',
+  session_id: $sid,
+  created_by: $uid
+};
+```
+
+### 收结果（前端 ← SDB）
+
+```sql
+LIVE SELECT * FROM agent_message 
+WHERE session_id = $sid AND status IN ('done', 'error') 
+ORDER BY created_at;
+```
+
+### Agent 回写格式
+
+```sql
+UPDATE agent_message SET 
+  response = '文字回复内容',
+  actions = [
+    { type: 'navigate', route: '/tables/store_inventory' },
+    { type: 'filter', field: 'store.name', value: '书院旗舰店' }
+  ],
+  status = 'done'
+WHERE id = $msg_id;
+```
+
+Agent actions 完整类型定义见 `admin/src/agent/types.ts`。
+
+---
+
+## 前端开发原则
+
+1. **不要手写表格列定义** → 从 `INFO FOR DB` 自动生成
+2. **不要手写 SQL** → Agent 生成
+3. **不要手写路由** → 统一 `/tables/:tableName`
+4. **不要手写权限判断** → SDB PERMISSIONS 自动过滤
+5. **不要手写枚举选项** → 从 ASSERT 自动提取
+
+---
+
+## 构建部署
+
+```bash
+cd admin && npm run build     # 构建前端
+bash deploy.sh                # 部署到 VPS
+bash schema/import-schema.sh  # 导入 schema（在 VPS 上执行）
+```

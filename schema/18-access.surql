@@ -1,0 +1,36 @@
+-- ═══════════════════════════════════════
+-- ACCESS: Phase 2 鉴权层
+-- 加载方式: surreal sql --multi < schema/18-access.surql
+-- ⚠️ SDK 无法执行 DEFINE ACCESS，必须用 CLI
+-- ═══════════════════════════════════════
+
+-- ★ agent_session：平台员工 + 机构员工统一鉴权
+--   SIGNIN 参数: { user: "username", pass: "plaintext-password" }
+--   $auth 注入: { id, name, current_role, current_tenant }
+DEFINE ACCESS agent_session ON DATABASE TYPE RECORD
+    SIGNUP ( CREATE user SET name = $name, user_type = $type )
+    SIGNIN (
+        (SELECT * FROM user
+         WHERE name = $user
+           AND crypto::argon2::compare(password_hash, $pass))[0]
+    )
+    DURATION FOR SESSION 24h
+;
+
+-- ★ h5_user：消费者端鉴权
+--   SIGNIN 参数: { phone: "138xxxx" }
+--   $auth 注入: { id: h5_user_id, tenant }
+DEFINE ACCESS h5_user ON DATABASE TYPE RECORD
+    SIGNUP (
+        CREATE h5_user SET
+            phone = $phone,
+            nickname = $nickname,
+            avatar_url = $avatar
+    )
+    SIGNIN (
+        (SELECT id, tenant
+         FROM h5_user
+         WHERE phone = $phone AND status = "active")[0]
+    )
+    DURATION FOR SESSION 7d
+;
