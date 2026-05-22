@@ -66,8 +66,8 @@ const SchemaTable = forwardRef<TableController, Props>(({ tableName, meta, onRow
       }
 
       const countSql = where
-        ? `SELECT count() FROM ${tableName} ${where}`
-        : `SELECT count() FROM ${tableName}`
+        ? `SELECT count() FROM ${tableName} ${where} GROUP ALL`
+        : `SELECT count() FROM ${tableName} GROUP ALL`
       const countResult = await sdbQuery(countSql, vars, token)
       setTotalCount(countResult?.[0]?.count ?? 0)
 
