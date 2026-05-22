@@ -11,6 +11,7 @@ import { NInput, NButton, NSpace, NTag, NSpin, useMessage } from 'naive-ui'
 import { useSdbQuery } from '@/composables/useSdbQuery'
 import { useAuthStore } from '@/stores/auth'
 import { subscribeAgentMessages } from '@/agent/live-query'
+import { tenantConfig } from '@/lib/tenant-config'
 import type { AgentResponse } from '@/agent/types'
 
 const { query } = useSdbQuery()
@@ -116,10 +117,10 @@ onMounted(() => {
         handleAgentResponse(resp)
       }
     },
-    window.location.origin + '/sdb',
+    window.location.origin + tenantConfig.sdbEndpoint,
     auth.token ?? '',
-    'huozhi',
-    'rfzv45'
+    tenantConfig.sdbNamespace,
+    tenantConfig.sdbDatabase
   )
 })
 
@@ -167,7 +168,7 @@ function handleKeydown(e: KeyboardEvent) {
             {{ msg.role === 'user' ? '我' : 'Agent' }}
           </n-tag>
           <n-tag v-if="msg.status === 'pending'" type="warning" size="tiny">
-            <n-spin size="12" />
+            <n-spin :size="12" />
           </n-tag>
           <n-tag v-if="msg.status === 'error'" type="error" size="tiny">失败</n-tag>
         </div>

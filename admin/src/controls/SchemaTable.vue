@@ -5,9 +5,8 @@
  * 从 table meta 自动生成列定义、搜索、排序、分页。
  * 接受 Agent 发来的 filter / highlight action。
  */
-
 import { ref, computed, watch, h } from 'vue'
-import { NDataTable, NInput, NSpace, NPagination } from 'naive-ui'
+import { NDataTable, NInput, NButton, NSpace, NPagination } from 'naive-ui'
 import type { DataTableColumn } from 'naive-ui'
 import { useSdbQuery } from '@/composables/useSdbQuery'
 import type { TableMeta, FieldMeta } from '@/lib/schema'
@@ -16,23 +15,22 @@ import { extractEnumValues } from '@/lib/schema'
 const props = defineProps<{
   tableName: string
   meta: TableMeta | null
-  /** 外部注入的 filter（来自 Agent action） */
-  externalFilter?: { field: string; value: string }
-  /** 外部注入的高亮行 ID */
-  highlightedRowIds?: string[]
 }>()
 
 const emit = defineEmits<{
   (e: 'rowClick', recordId: string): void
+  (e: 'create'): void
 }>()
 
 const { query } = useSdbQuery()
 
 const rows = ref<any[]>([])
+const totalCount = ref(0)
 const loading = ref(false)
 const searchText = ref('')
 const page = ref(1)
 const pageSize = ref(20)
+const highlightedRowIds = ref<string[]>([])
 
 // ── 动态生成列定义 ──
 
@@ -82,11 +80,11 @@ const columns = computed<DataTableColumn<any>[]>(() => {
 })
 
 function columnWidth(field: FieldMeta): number {
-  if (field.kind === 'int' || field.kind === 'float' || field.kind === 'decimal' || field.kind === 'bool') return 100
+  if (['int', 'float', 'decimal', 'bool'].includes(field.kind)) return 100
   if (field.kind === 'datetime') return 160
   if (field.isRecord) return 160
   if (field.name === 'id') return 200
-  if (field.name === 'name' || field.name === 'title') return 200
+  if (['name', 'title'].includes(field.name)) return 200
   return 150
 }
 
@@ -94,25 +92,66 @@ function isSortable(field: FieldMeta): boolean {
   return ['string', 'int', 'float', 'decimal', 'datetime'].some(t => field.kind.includes(t))
 }
 
+// ── 构建搜索 SQL ──
+
+function buildWhereClause(): string {
+  const text = searchText.value.trim()
+  if (!text || !props.meta) return ''
+
+  const clauses: string[] = []
+  for (const field of props.meta.fields) {
+    if (['string', 'text'].some(t => field.kind.includes(t))) {
+      clauses.push(`${field.name} CONTAINS $search`)
+    }
+  }
+  return clauses.length > 0 ? `WHERE (${clauses.join(' OR ')})` : ''
+}
+
 // ── 数据加载 ──
+
+let fetchTimer: ReturnType<typeof setTimeout> | null = null
 
 async function fetchData() {
   if (!props.tableName) return
   loading.value = true
   try {
-    const result = await query(
-      `SELECT * FROM ${props.tableName} ORDER BY created_at DESC LIMIT ${pageSize.value} START ${(page.value - 1) * pageSize.value}`
-    )
+    const where = buildWhereClause()
+    const esc = (s: string) => s.replace(/'/g, "\\'").replace(/"/g, '\\"')
+
+    // 查总数
+    const countSql = where
+      ? `SELECT count() FROM ${props.tableName} ${where}`
+      : `SELECT count() FROM ${props.tableName}`
+    const countResult = await query(countSql, where ? { search: esc(searchText.value.trim()) } : undefined)
+    totalCount.value = countResult[0]?.[0]?.count ?? 0
+
+    // 查数据（不 FETCH 关联避免查询慢，record 列前端渲染时取 nested.name）
+    const dataSql = `SELECT * FROM ${props.tableName} ${where} ORDER BY created_at DESC LIMIT ${pageSize.value} START ${(page.value - 1) * pageSize.value}`
+    const result = await query(dataSql, where ? { search: esc(searchText.value.trim()) } : undefined)
     rows.value = result[0] || []
   } catch (err: any) {
     console.error(`[SchemaTable] load ${props.tableName} failed:`, err.message)
     rows.value = []
+    totalCount.value = 0
   } finally {
     loading.value = false
   }
 }
 
-watch(() => props.tableName, fetchData, { immediate: true })
+// Debounce search
+watch(searchText, () => {
+  page.value = 1
+  if (fetchTimer) clearTimeout(fetchTimer)
+  fetchTimer = setTimeout(fetchData, 300)
+})
+
+watch(() => props.tableName, () => {
+  searchText.value = ''
+  page.value = 1
+  highlightedRowIds.value = []
+  fetchData()
+}, { immediate: true })
+
 watch(page, fetchData)
 
 // ── 行点击 → 打开详情 ──
@@ -124,7 +163,7 @@ function handleRowClick(row: any) {
 // ── 行样式（高亮） ──
 
 const rowProps = (row: any) => {
-  const isHighlighted = props.highlightedRowIds?.includes(row.id)
+  const isHighlighted = highlightedRowIds.value.includes(row.id)
   return {
     style: isHighlighted ? 'background: #fff3cd; cursor: pointer' : 'cursor: pointer',
     onClick: () => handleRowClick(row),
@@ -135,10 +174,11 @@ const rowProps = (row: any) => {
 
 defineExpose({
   setFilter(field: string, value: string) {
+    // Agent 的 filter action → 设置搜索文本
     searchText.value = value
   },
   highlightRows(rowIds: string[]) {
-    // 通过 emit 告知父组件
+    highlightedRowIds.value = rowIds
   },
   refresh() {
     fetchData()
@@ -146,22 +186,30 @@ defineExpose({
   downloadCSV(_sql: string, _filename?: string) {
     // TODO: 实现 CSV 导出
   },
+  openCreate() {
+    emit('create')
+  },
 })
 </script>
 
 <template>
   <div class="schema-table">
     <n-space style="margin-bottom: 12px" align="center" justify="space-between">
-      <n-input
-        v-model:value="searchText"
-        placeholder="搜索..."
-        clearable
-        style="width: 240px"
-      />
+      <n-space align="center">
+        <n-input
+          v-model:value="searchText"
+          placeholder="搜索..."
+          clearable
+          style="width: 240px"
+        />
+        <n-button type="primary" size="small" @click="emit('create')">
+          + 新建
+        </n-button>
+      </n-space>
       <n-pagination
         v-model:page="page"
         :page-size="pageSize"
-        :item-count="rows.length"
+        :item-count="totalCount"
         size="small"
       />
     </n-space>

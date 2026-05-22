@@ -33,7 +33,7 @@ const { query } = useSdbQuery()
 const message = useMessage()
 
 const record = ref<Record<string, unknown>>({})
-const formData = ref<Record<string, unknown>>({})
+const formData = ref<Record<string, any>>({})
 const loading = ref(false)
 const saving = ref(false)
 

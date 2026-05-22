@@ -19,10 +19,7 @@ DEFINE FIELD response ON agent_message TYPE option<string>
   COMMENT 'Agent 文字回复';
 
 DEFINE FIELD actions ON agent_message TYPE option<array>
-  COMMENT 'Agent 操作指令序列 [\
-    { type: string, ... },\
-    类型: navigate | filter | highlight | open_detail | open_create | data | confirm | download | refresh | reply\
-  ]';
+  COMMENT 'Agent 操作指令序列: navigate | filter | highlight | open_detail | open_create | data | confirm | download | refresh | reply';
 
 DEFINE FIELD status ON agent_message TYPE string
   ASSERT $value INSIDE ['pending', 'processing', 'done', 'error']

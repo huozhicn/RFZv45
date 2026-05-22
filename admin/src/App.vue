@@ -19,6 +19,8 @@ import type { MenuOption } from 'naive-ui'
 import SchemaTable from '@/controls/SchemaTable.vue'
 import DetailPanel from '@/controls/DetailPanel.vue'
 import ChatPanel from '@/controls/ChatPanel.vue'
+import LoginView from '@/views/LoginView.vue'
+import { useAuthStore } from '@/stores/auth'
 import { useSdbQuery } from '@/composables/useSdbQuery'
 import { loadSchemaMeta } from '@/lib/schema'
 import type { TableMeta } from '@/lib/schema'
@@ -28,6 +30,7 @@ import { dispatchActions, type TableController, type DetailController } from '@/
 const router = useRouter()
 const route = useRoute()
 const { query } = useSdbQuery()
+const auth = useAuthStore()
 
 // ── Schema 元数据 ──
 const schemaMeta = ref<Map<string, TableMeta>>(new Map())
@@ -99,6 +102,15 @@ function handleRowClick(recordId: string) {
   detailVisible.value = true
 }
 
+// ── 新建按钮 → 打开创建表单 ──
+
+function handleCreate() {
+  detailRecordId.value = null
+  detailMode.value = 'create'
+  detailPrefill.value = undefined
+  detailVisible.value = true
+}
+
 // ── Chat Action 分发 ──
 
 function handleAgentActions(actions: AgentAction[], _response: AgentResponse) {
@@ -137,7 +149,11 @@ function handleDetailClose() {
 </script>
 
 <template>
-  <n-message-provider>
+  <!-- 未登录 → 登录页 -->
+  <LoginView v-if="!auth.isAuthenticated" />
+
+  <!-- 已登录 → 管理界面 -->
+  <n-message-provider v-else>
     <n-dialog-provider>
       <n-layout style="height: 100vh">
         <n-layout-sider
@@ -176,6 +192,7 @@ function handleDetailClose() {
               :table-name="currentTable"
               :meta="currentMeta"
               @row-click="handleRowClick"
+              @create="handleCreate"
             />
             <div v-else style="text-align: center; color: #999; padding: 40px">
               <p style="font-size: 18px">👈 选择左侧表 或 💬 在下方对话中输入指令</p>
