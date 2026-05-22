@@ -43,7 +43,8 @@ export default function App() {
   const tableRef = useRef<TableController | null>(null)
   const tableRefs = useRef<Map<string, TableController>>(new Map())
 
-  const version = (window as any).__COMMIT_HASH__ || 'dev'
+  // @ts-ignore — replaced by vite define
+  const version: string = __COMMIT_HASH__
 
   // Load schema on auth
   useEffect(() => {
