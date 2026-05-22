@@ -219,7 +219,7 @@ export default function App() {
       {/* Main content */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
         {/* Scrollable area */}
-        <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', padding: '16px 24px 80px' }}>
+        <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', padding: '16px 24px' }}>
           {currentTable ? (
             <div style={{ marginBottom: 16 }}>
               <SchemaTable
@@ -275,12 +275,11 @@ export default function App() {
           ))}
         </div>
 
-        {/* Fixed bottom input */}
+        {/* Bottom input — flex child, stays at bottom of right column */}
         <div style={{
-          position: 'fixed', bottom: 0, left: 0, right: 0,
           borderTop: '1px solid #e0e0e0', padding: '12px 24px',
           background: '#fff', display: 'flex', gap: 8, alignItems: 'flex-end',
-          zIndex: 10,
+          flexShrink: 0,
         }}>
           <textarea
             value={inputText}
