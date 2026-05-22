@@ -1,21 +1,19 @@
 /**
- * Schema 元数据加载器
+ * Schema 元数据加载器 — v2 简化版
  *
- * 用 INFO FOR TABLE 获取字段定义、类型、断言（枚举值），
- * 驱动 SchemaTable 和 DetailPanel 的自动渲染。
- *
- * INFO FOR DB 需要高权限（scope token 不可用），
- * 改用 TABLE_REGISTRY 枚举所有表，逐个查 INFO FOR TABLE。
+ * 不查 INFO FOR TABLE（scope token 无权限），
+ * 直接从 TABLE_REGISTRY 生成菜单，
+ * 点表后用 SELECT * LIMIT 1 拿字段名当列头。
  */
 import { TABLE_REGISTRY } from './table-registry'
 
 export interface FieldMeta {
   name: string
-  kind: string             // TYPE string, TYPE int, TYPE datetime, etc.
-  assert: string | null    // ASSERT $value INSIDE [...] → 提取枚举选项
+  kind: string
+  assert: string | null
   default: string | null
   isOption: boolean
-  isRecord: boolean        // TYPE record<xxx>
+  isRecord: boolean
   recordTarget: string | null
   comment: string | null
 }
@@ -23,38 +21,6 @@ export interface FieldMeta {
 export interface TableMeta {
   name: string
   fields: FieldMeta[]
-}
-
-/**
- * 解析 INFO FOR TABLE 返回的 DEFINE FIELD 语句
- */
-function parseFieldDefine(stmt: string): FieldMeta | null {
-  const nameMatch = stmt.match(/DEFINE FIELD (\w+) ON/)
-  if (!nameMatch) return null
-
-  const name = nameMatch[1]
-
-  // 隐藏内部字段
-  if (name.startsWith('_')) return null
-
-  const typeMatch = stmt.match(/TYPE (\S+)/)
-  const kind = typeMatch?.[1] ?? 'string'
-
-  const assertMatch = stmt.match(/ASSERT \$value INSIDE \[(.*?)\]/)
-  const assert = assertMatch ? assertMatch[1] : null
-
-  const defaultMatch = stmt.match(/DEFAULT ([\w:.()'"]+)/)
-  const defaultValue = defaultMatch?.[1] ?? null
-
-  const isOption = stmt.includes('option<')
-  const recordMatch = stmt.match(/record<(\w+)>/)
-  const isRecord = !!recordMatch
-  const recordTarget = recordMatch?.[1] ?? null
-
-  const commentMatch = stmt.match(/COMMENT ['"](.+?)['"]/)
-  const comment = commentMatch?.[1] ?? null
-
-  return { name, kind, assert, default: defaultValue, isOption, isRecord, recordTarget, comment }
 }
 
 /**
@@ -67,44 +33,43 @@ export function extractEnumValues(assert: string | null): string[] {
 }
 
 /**
- * 从 SDB INFO FOR TABLE 返回的原始数据中解析字段列表
+ * 从一行数据的 keys 推断列定义
  */
-export function parseTableMeta(raw: Record<string, unknown>, tableName: string): TableMeta | null {
-  const fields = raw.fields as Record<string, string> | undefined
-  if (!fields) return null
-
-  const fieldList: FieldMeta[] = []
-  for (const stmt of Object.values(fields)) {
-    const meta = parseFieldDefine(stmt)
-    if (meta) fieldList.push(meta)
+export function inferFieldsFromRow(row: Record<string, unknown>): FieldMeta[] {
+  const fields: FieldMeta[] = []
+  for (const [key, val] of Object.entries(row)) {
+    if (key.startsWith('_')) continue
+    const kind = inferKind(val)
+    fields.push({
+      name: key,
+      kind,
+      assert: null,
+      default: null,
+      isOption: val === null,
+      isRecord: typeof val === 'string' && val.includes(':'),
+      recordTarget: null,
+      comment: key,
+    })
   }
+  return fields
+}
 
-  return { name: tableName, fields: fieldList }
+function inferKind(val: unknown): string {
+  if (val === null || val === undefined) return 'option<string>'
+  if (typeof val === 'number') return Number.isInteger(val) ? 'int' : 'float'
+  if (typeof val === 'boolean') return 'bool'
+  if (typeof val === 'string') {
+    if (/^\d{4}-\d{2}-\d{2}T/.test(val)) return 'datetime'
+    return 'string'
+  }
+  if (typeof val === 'object') return 'object'
+  return 'string'
 }
 
 /**
- * INFO FOR TABLE 返回多种数据格式：
- * - 数组 [{ events, fields, indexes, lives, tables }]（正常）
- * - 字符串 "IAM error: ..."（无权限）
- *
- * 尝试多种解析路径。
- */
-function extractFieldsObject(data: unknown): Record<string, unknown> | null {
-  // 路径1: [{ fields: {...} }]
-  if (Array.isArray(data) && data.length > 0 && typeof data[0] === 'object' && data[0] !== null) {
-    return data[0] as Record<string, unknown>
-  }
-  // 路径2: 纯字符串 → 无权限
-  if (typeof data === 'string') return null
-  // 路径3: 直接是对象
-  if (typeof data === 'object' && data !== null && 'fields' in data) {
-    return data as Record<string, unknown>
-  }
-  return null
-}
-
-/**
- * 加载所有表的元数据
+ * 加载所有可访问表的基本信息。
+ * 传入 queryFn 用 auth token 查。
+ * 对每张表查 SELECT * LIMIT 1 获取字段结构。
  */
 export async function loadSchemaMeta(
   queryFn: (sql: string) => Promise<any>
@@ -113,17 +78,22 @@ export async function loadSchemaMeta(
 
   for (const tableName of TABLE_REGISTRY) {
     try {
-      const result = await queryFn(`INFO FOR TABLE ${tableName}`)
-      const raw = extractFieldsObject(result[0]?.[0] ?? result[0])
-      if (raw) {
-        const tableMeta = parseTableMeta(raw, tableName)
-        if (tableMeta && tableMeta.fields.length > 0) {
-          meta.set(tableName, tableMeta)
-        }
+      const result = await queryFn(`SELECT * FROM ${tableName} LIMIT 1`)
+      const rows = result[0] || []
+      if (rows.length > 0) {
+        meta.set(tableName, {
+          name: tableName,
+          fields: inferFieldsFromRow(rows[0]),
+        })
+      } else {
+        // 空表也加到菜单（可以新建记录）
+        meta.set(tableName, {
+          name: tableName,
+          fields: [],
+        })
       }
-      // 无权限的表静默跳过
     } catch {
-      // 静默跳过
+      // 无权限或表不存在 → 静默跳过
     }
   }
 
