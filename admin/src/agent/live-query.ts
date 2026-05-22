@@ -31,7 +31,7 @@ export function subscribeAgentMessages(
           'Surreal-NS': 'huozhi',
           'Surreal-DB': 'rfzv45',
         },
-        body: `SELECT * FROM agent_message WHERE session_id = '${sessionId}' AND status IN ('done', 'error') ORDER BY created_at`,
+        body: `SELECT * FROM agent_message WHERE session_id = '${sessionId}' AND status IN ['done', 'error'] ORDER BY created_at`,
       })
       if (!resp.ok) return
       const data = await resp.json()
