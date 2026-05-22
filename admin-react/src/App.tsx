@@ -20,7 +20,6 @@ interface ChatMsg {
 
 export default function App() {
   const auth = useAuth()
-  const [collapsed, setCollapsed] = useState(false)
   const [schemaMeta, setSchemaMeta] = useState<Map<string, TableMeta>>(new Map())
   const [menuItems, setMenuItems] = useState<{ key: string; label: string }[]>([])
   const [currentTable, setCurrentTable] = useState('')
@@ -77,7 +76,6 @@ export default function App() {
 
   function navigateTable(name: string) {
     window.location.hash = `#/tables/${name}`
-    setCollapsed(true)
   }
 
   // Detail handlers
@@ -165,55 +163,38 @@ export default function App() {
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
       {/* Sidebar */}
       <div style={{
-        width: collapsed ? 0 : 220,
-        minWidth: collapsed ? 0 : 220,
-        transition: 'width 0.2s, min-width 0.2s',
+        width: 220,
+        minWidth: 220,
         borderRight: '1px solid #e8e8e8',
         background: '#fafafa',
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
       }}>
-        {/* Collapse toggle bar */}
-        <div
-          onClick={() => setCollapsed(!collapsed)}
-          style={{
-            position: 'absolute', left: collapsed ? 0 : 220, top: 0, bottom: 0,
-            width: 4, cursor: 'pointer', zIndex: 10,
-            background: 'transparent',
-          }}
-          onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = '#d9d9d9'}
-          onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
-        />
-
-        {!collapsed && (
-          <>
-            <div style={{ padding: '16px', fontWeight: 700, fontSize: 15, flexShrink: 0 }}>
-              RFZv45 <span style={{ fontWeight: 400, fontSize: 12, color: '#999' }}>如法造</span>
+        <div style={{ padding: '16px', fontWeight: 700, fontSize: 15, flexShrink: 0 }}>
+          RFZv45 <span style={{ fontWeight: 400, fontSize: 12, color: '#999' }}>如法造</span>
+        </div>
+        <div style={{ flex: 1, overflowY: 'auto' }}>
+          {menuItems.map(item => (
+            <div
+              key={item.key}
+              onClick={() => navigateTable(item.key)}
+              style={{
+                padding: '8px 16px', cursor: 'pointer', fontSize: 13,
+                background: currentTable === item.key ? '#e6f4ff' : undefined,
+                color: currentTable === item.key ? '#1677ff' : '#333',
+                borderRight: currentTable === item.key ? '3px solid #1677ff' : undefined,
+              }}
+              onMouseEnter={e => { if (currentTable !== item.key) (e.currentTarget as HTMLElement).style.background = '#f0f0f0' }}
+              onMouseLeave={e => { if (currentTable !== item.key) (e.currentTarget as HTMLElement).style.background = '' }}
+            >
+              {item.label}
             </div>
-            <div style={{ flex: 1, overflowY: 'auto' }}>
-              {menuItems.map(item => (
-                <div
-                  key={item.key}
-                  onClick={() => navigateTable(item.key)}
-                  style={{
-                    padding: '8px 16px', cursor: 'pointer', fontSize: 13,
-                    background: currentTable === item.key ? '#e6f4ff' : undefined,
-                    color: currentTable === item.key ? '#1677ff' : '#333',
-                    borderRight: currentTable === item.key ? '3px solid #1677ff' : undefined,
-                  }}
-                  onMouseEnter={e => { if (currentTable !== item.key) (e.currentTarget as HTMLElement).style.background = '#f0f0f0' }}
-                  onMouseLeave={e => { if (currentTable !== item.key) (e.currentTarget as HTMLElement).style.background = '' }}
-                >
-                  {item.label}
-                </div>
-              ))}
-            </div>
-            <div style={{ padding: '12px 16px', color: '#aaa', fontSize: 11, fontFamily: 'monospace', flexShrink: 0 }}>
-              v.{version}
-            </div>
-          </>
-        )}
+          ))}
+        </div>
+        <div style={{ padding: '12px 16px', color: '#aaa', fontSize: 11, fontFamily: 'monospace', flexShrink: 0 }}>
+          v.{version}
+        </div>
       </div>
 
       {/* Main content */}
