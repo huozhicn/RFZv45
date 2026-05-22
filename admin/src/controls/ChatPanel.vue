@@ -102,8 +102,10 @@ const emit = defineEmits<{
 }>()
 
 // ── 订阅 LIVE QUERY ──
+// 只在已登录时启动
 
 onMounted(() => {
+  if (!auth.token) return
   unsubscribe = subscribeAgentMessages(
     sessionId.value,
     (rows) => {

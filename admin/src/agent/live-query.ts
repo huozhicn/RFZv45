@@ -1,10 +1,9 @@
 /**
- * SDB LIVE QUERY 封装
+ * SDB LIVE QUERY 封装（轮询降级版）
  *
- * 使用 SDB REST API 的 /live 端点订阅实时更新。
- * 如果 /live 不可用，降级为轮询。
+ * SDB 3.0 REST API 不支持 /live WebSocket，用轮询模拟。
+ * 启动后每 2 秒查一次 agent_message 表。
  */
-
 import type { AgentMessage } from './types'
 
 type LiveCallback = (rows: AgentMessage[]) => void
@@ -17,6 +16,11 @@ export function subscribeAgentMessages(
   ns: string,
   db: string
 ): () => void {
+  if (!authToken) {
+    console.warn('[live-query] no auth token, skipping subscription')
+    return () => {}
+  }
+
   let stop = false
   let timeoutId: ReturnType<typeof setTimeout> | null = null
 
@@ -32,17 +36,24 @@ export function subscribeAgentMessages(
           'Surreal-DB': db,
           'Authorization': `Bearer ${authToken}`,
         },
-        body: JSON.stringify({
-          query: `SELECT * FROM agent_message WHERE session_id = '${sessionId}' AND status IN ('done', 'error') ORDER BY created_at`,
-        }),
+        body: `SELECT * FROM agent_message WHERE session_id = '${sessionId}' AND status IN ('done', 'error') ORDER BY created_at`,
       })
+      if (!resp.ok) {
+        console.error('[live-query] HTTP error:', resp.status)
+        return
+      }
       const data = await resp.json()
-      const rows: AgentMessage[] = data[0]?.result || []
-      callback(rows)
+      // REST /sql 返回 [{result: [...], status: "OK"}, ...]
+      const rows: AgentMessage[] = Array.isArray(data) ? (data[0]?.result || []) : []
+      if (rows.length > 0) {
+        callback(rows)
+      }
     } catch (err) {
       console.error('[live-query] poll error:', err)
     }
-    timeoutId = setTimeout(poll, 2000) // 2秒轮询
+    if (!stop) {
+      timeoutId = setTimeout(poll, 2000)
+    }
   }
 
   poll()
