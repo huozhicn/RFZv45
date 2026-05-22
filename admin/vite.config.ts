@@ -9,6 +9,7 @@ const GIT_HASH = (() => {
 })()
 
 export default defineConfig({
+  base: '/v45/',
   plugins: [vue()],
   resolve: {
     alias: {
