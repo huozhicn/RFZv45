@@ -7,7 +7,7 @@
 DEFINE ACCESS agent_session ON DATABASE TYPE RECORD
     SIGNUP ( CREATE user SET name = $name, user_type = $type )
     SIGNIN (
-        (SELECT * FROM user WHERE name = $user)[0]
+        (SELECT * FROM user WHERE name = $user OR id = type::record('user', $user))[0]
     )
     DURATION FOR SESSION 24h
 ;
