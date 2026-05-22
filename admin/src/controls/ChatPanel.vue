@@ -56,7 +56,7 @@ async function sendMessage() {
       }
     )
 
-    const newMsg = result[0]?.[0]
+    const newMsg = result?.[0]
     messages.value.push({
       id: newMsg?.id ?? '',
       role: 'user',
@@ -119,10 +119,7 @@ onMounted(() => {
         handleAgentResponse(resp)
       }
     },
-    window.location.origin + tenantConfig.sdbEndpoint,
     auth.token ?? '',
-    tenantConfig.sdbNamespace,
-    tenantConfig.sdbDatabase
   )
 })
 

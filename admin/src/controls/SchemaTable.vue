@@ -123,12 +123,12 @@ async function fetchData() {
       ? `SELECT count() FROM ${props.tableName} ${where}`
       : `SELECT count() FROM ${props.tableName}`
     const countResult = await query(countSql, where ? { search: esc(searchText.value.trim()) } : undefined)
-    totalCount.value = countResult[0]?.[0]?.count ?? 0
+    totalCount.value = countResult?.[0]?.count ?? 0
 
-    // 查数据（不 FETCH 关联避免查询慢，record 列前端渲染时取 nested.name）
+    // 查数据
     const dataSql = `SELECT * FROM ${props.tableName} ${where} ORDER BY created_at DESC LIMIT ${pageSize.value} START ${(page.value - 1) * pageSize.value}`
-    const result = await query(dataSql, where ? { search: esc(searchText.value.trim()) } : undefined)
-    rows.value = result[0] || []
+    const rows = await query(dataSql, where ? { search: esc(searchText.value.trim()) } : undefined) || []
+    rows.value = rows
   } catch (err: any) {
     console.error(`[SchemaTable] load ${props.tableName} failed:`, err.message)
     rows.value = []

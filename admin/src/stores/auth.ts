@@ -8,36 +8,6 @@ interface Membership {
   tenant_id: string
 }
 
-function sdbRestEndpoint(): string {
-  const ep = tenantConfig.sdbEndpoint
-  if (ep.startsWith('/')) {
-    return `${window.location.protocol}//${window.location.host}${ep}`
-  }
-  return ep.replace(/^ws/, 'http')
-}
-
-async function restQuery(sql: string, token?: string): Promise<any> {
-  const config = tenantConfig
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-    'Surreal-NS': config.sdbNamespace,
-    'Surreal-DB': config.sdbDatabase,
-  }
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`
-  }
-  const resp = await fetch(`${sdbRestEndpoint()}/sql`, {
-    method: 'POST',
-    headers,
-    body: sql,
-  })
-  if (!resp.ok) throw new Error(`Query failed: ${resp.status}`)
-  return resp.json()
-}
-
-export { sdbRestEndpoint, restQuery }
-
 const STORAGE_KEY = 'rfzv4-auth'
 
 function saveToStorage(user: any, token: string | null, memberships: Membership[], currentTenantId: string | null) {
@@ -58,8 +28,32 @@ function clearStorage() {
   try { sessionStorage.removeItem(STORAGE_KEY) } catch {}
 }
 
+/**
+ * Direct SDB query helper — used inside the store before pinia is fully available.
+ */
+async function sdbQuery(sql: string, token?: string): Promise<any[]> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'text/plain',
+    'Accept': 'application/json',
+    'Surreal-NS': tenantConfig.sdbNamespace,
+    'Surreal-DB': tenantConfig.sdbDatabase,
+  }
+  if (token) headers['Authorization'] = `Bearer ${token}`
+
+  const ep = tenantConfig.sdbEndpoint.startsWith('/')
+    ? `${window.location.origin}${tenantConfig.sdbEndpoint}/sql`
+    : `${tenantConfig.sdbEndpoint.replace(/^ws/, 'http')}/sql`
+
+  const resp = await fetch(ep, { method: 'POST', headers, body: sql })
+  if (!resp.ok) {
+    const text = await resp.text().catch(() => '')
+    throw new Error(`SDB ${resp.status}: ${text.slice(0, 80)}`)
+  }
+  const data = await resp.json()
+  return Array.isArray(data) ? (data[0]?.result ?? []) : []
+}
+
 export const useAuthStore = defineStore('auth', () => {
-  // Restore from sessionStorage on init
   const saved = loadFromStorage()
 
   const user = ref<any>(saved?.user ?? null)
@@ -74,8 +68,11 @@ export const useAuthStore = defineStore('auth', () => {
     isPlatform.value = config.isPlatform
     loading.value = true
     try {
-      // REST signin
-      const resp = await fetch(`${sdbRestEndpoint()}/signin`, {
+      const ep = config.sdbEndpoint.startsWith('/')
+        ? `${window.location.origin}${config.sdbEndpoint}`
+        : config.sdbEndpoint.replace(/^ws/, 'http')
+
+      const resp = await fetch(`${ep}/signin`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -95,8 +92,6 @@ export const useAuthStore = defineStore('auth', () => {
         throw new Error(err.details || '登录失败')
       }
       const { token: authToken } = await resp.json()
-
-      // Save token for subsequent REST queries
       token.value = authToken
 
       // Decode JWT for user ID
@@ -104,13 +99,13 @@ export const useAuthStore = defineStore('auth', () => {
       const userId = payload.ID || payload.id || ''
       user.value = { id: userId, username, ns: payload.NS, db: payload.DB }
 
-      // Query user's current role and tenant directly
+      // Query user's current role and tenant
       if (userId) {
-        const result = await restQuery(
+        const rows = await sdbQuery(
           `SELECT current_role, current_tenant FROM ${userId}`,
           authToken
         )
-        const data = result[0]?.result?.[0]
+        const data = rows[0]
         if (data?.current_role) {
           memberships.value = [{
             role: data.current_role,
@@ -132,7 +127,6 @@ export const useAuthStore = defineStore('auth', () => {
         currentTenantId.value = config.tenantId
       }
 
-      // Persist to sessionStorage
       saveToStorage(user.value, authToken, memberships.value, currentTenantId.value)
     } finally {
       loading.value = false
@@ -161,7 +155,6 @@ export const useAuthStore = defineStore('auth', () => {
   })
 
   const showTenantSwitcher = computed(() => isPlatform.value && memberships.value.length > 1)
-
   const isAuthenticated = computed(() => !!user.value)
 
   return {

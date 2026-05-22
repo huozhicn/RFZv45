@@ -47,7 +47,7 @@ async function loadRecord() {
   loading.value = true
   try {
     const result = await query(`SELECT * FROM ${props.recordId}`)
-    const data = result[0]?.[0]
+    const data = result?.[0]
     if (data) {
       record.value = data
       formData.value = { ...data }

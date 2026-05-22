@@ -79,7 +79,7 @@ export async function loadSchemaMeta(
   for (const tableName of TABLE_REGISTRY) {
     try {
       const result = await queryFn(`SELECT * FROM ${tableName} LIMIT 1`)
-      const rows = result[0] || []
+      const rows = result || []
       if (rows.length > 0) {
         meta.set(tableName, {
           name: tableName,
