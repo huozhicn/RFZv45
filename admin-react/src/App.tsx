@@ -81,12 +81,6 @@ export default function App() {
     setDetailPrefill(undefined)
     setDetailVisible(true)
   }
-  function handleCreate() {
-    setDetailRecordId(null)
-    setDetailMode('create')
-    setDetailPrefill(undefined)
-    setDetailVisible(true)
-  }
   function handleDetailClose() {
     setDetailVisible(false)
     // Save table ref to shared map for agent actions
@@ -141,7 +135,6 @@ export default function App() {
               tableName={currentTable}
               meta={currentMeta}
               onRowClick={handleRowClick}
-              onCreate={handleCreate}
             />
           ) : (
             <div style={{ textAlign: 'center', padding: '80px 0', color: '#999' }}>

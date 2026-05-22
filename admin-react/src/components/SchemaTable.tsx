@@ -8,7 +8,6 @@ interface Props {
   tableName: string
   meta: TableMeta | null
   onRowClick: (recordId: string) => void
-  onCreate: () => void
 }
 
 export interface TableController {
@@ -40,7 +39,7 @@ function renderCell(row: any, field: FieldMeta): string {
   return String(val)
 }
 
-const SchemaTable = forwardRef<TableController, Props>(({ tableName, meta, onRowClick, onCreate }, ref) => {
+const SchemaTable = forwardRef<TableController, Props>(({ tableName, meta, onRowClick }, ref) => {
   const { token } = useAuth()
   const [rows, setRows] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
@@ -111,22 +110,16 @@ const SchemaTable = forwardRef<TableController, Props>(({ tableName, meta, onRow
             value={searchText}
             onChange={e => setSearchText(e.target.value)}
             placeholder="搜索..."
-            style={{ width: 200, padding: '6px 10px', border: '1px solid #d9d9d9', borderRadius: 6, fontSize: 13 }}
+            style={{ width: 240, padding: '8px 12px', border: '1px solid #d9d9d9', borderRadius: 6, fontSize: 14 }}
           />
-          {meta.canCreate !== false && (
-            <button onClick={onCreate} style={{
-              padding: '6px 14px', background: '#1677ff', color: '#fff',
-              border: 'none', borderRadius: 6, fontSize: 13, cursor: 'pointer'
-            }}>+ 新建</button>
-          )}
         </div>
-        <div style={{ display: 'flex', gap: 4, alignItems: 'center', fontSize: 13, color: '#666' }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 14, color: '#666' }}>
           <button disabled={page <= 1} onClick={() => setPage(p => p - 1)}
-            style={{ border: '1px solid #d9d9d9', background: '#fff', borderRadius: 4, padding: '2px 8px', cursor: page <= 1 ? 'default' : 'pointer' }}
+            style={{ width: 36, height: 36, border: '1px solid #d9d9d9', background: '#fff', borderRadius: 6, fontSize: 18, cursor: page <= 1 ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           >‹</button>
-          <span>{page} / {totalPages || 1}</span>
+          <span style={{ minWidth: 60, textAlign: 'center' }}>{page} / {totalPages || 1}</span>
           <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}
-            style={{ border: '1px solid #d9d9d9', background: '#fff', borderRadius: 4, padding: '2px 8px', cursor: page >= totalPages ? 'default' : 'pointer' }}
+            style={{ width: 36, height: 36, border: '1px solid #d9d9d9', background: '#fff', borderRadius: 6, fontSize: 18, cursor: page >= totalPages ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           >›</button>
           <span style={{ marginLeft: 8 }}>共 {totalCount} 条</span>
         </div>

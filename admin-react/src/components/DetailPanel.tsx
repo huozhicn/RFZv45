@@ -86,11 +86,12 @@ export default function DetailPanel({ visible, tableName, meta, recordId, mode, 
       <div onClick={onClose} style={{
         position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', zIndex: 1000
       }} />
-      {/* Drawer */}
+      {/* Drawer — bottom sheet */}
       <div style={{
-        position: 'fixed', top: 0, right: 0, bottom: 0, width: 480,
-        background: '#fff', boxShadow: '-4px 0 12px rgba(0,0,0,0.1)',
+        position: 'fixed', bottom: 0, left: 0, right: 0, height: '60vh',
+        background: '#fff', boxShadow: '0 -4px 20px rgba(0,0,0,0.15)',
         zIndex: 1001, display: 'flex', flexDirection: 'column',
+        borderTopLeftRadius: 16, borderTopRightRadius: 16,
       }}>
         {/* Header */}
         <div style={{ padding: '16px 20px', borderBottom: '1px solid #e8e8e8', fontWeight: 600, fontSize: 16 }}>
