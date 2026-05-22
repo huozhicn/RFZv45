@@ -9,7 +9,7 @@
  *   DetailPanel（侧边抽屉）          |  → 点行展开
  */
 
-import { ref, onMounted, provide } from 'vue'
+import { ref, onMounted, provide, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import {
   NLayout, NLayoutSider, NLayoutContent, NMenu,
@@ -55,11 +55,20 @@ const tableRefs = new Map<string, TableController>()
 // ── 侧栏版本 ──
 const version = __COMMIT_HASH__
 
-// ── 初始化：加载 schema → 生成菜单 ──
+// ── 初始化：登录后才加载 schema ──
 
-onMounted(async () => {
-  schemaMeta.value = await loadSchemaMeta(query)
-  buildMenu()
+watch(() => auth.isAuthenticated, (authed) => {
+  if (authed) {
+    loadSchemaMeta(query).then(meta => {
+      schemaMeta.value = meta
+      buildMenu()
+    })
+  }
+}, { immediate: true })
+
+// 移除 onMounted 里的加载逻辑
+onMounted(() => {
+  // schema 加载由上面的 watch 处理
 })
 
 function buildMenu() {
@@ -84,7 +93,6 @@ function handleMenuSelect(key: string) {
 
 // ── 根据路由显示表 ──
 
-import { watch } from 'vue'
 watch(() => route.path, (path) => {
   const match = path.match(/^\/tables\/(\w+)/)
   if (match) {
@@ -149,13 +157,13 @@ function handleDetailClose() {
 </script>
 
 <template>
-  <!-- 未登录 → 登录页 -->
-  <LoginView v-if="!auth.isAuthenticated" />
-
-  <!-- 已登录 → 管理界面 -->
-  <n-message-provider v-else>
+  <n-message-provider>
     <n-dialog-provider>
-      <n-layout style="height: 100vh">
+      <!-- 未登录 → 登录页 -->
+      <LoginView v-if="!auth.isAuthenticated" />
+
+      <!-- 已登录 → 管理界面 -->
+      <n-layout v-else style="height: 100vh">
         <n-layout-sider
           bordered
           collapse-mode="width"
