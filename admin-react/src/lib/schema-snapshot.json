@@ -1,0 +1,4962 @@
+{
+  "user": {
+    "name": "user",
+    "fields": [
+      {
+        "name": "id",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": "ID"
+      },
+      {
+        "name": "created_at",
+        "kind": "datetime",
+        "assert": null,
+        "default": "time::now()",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "current_role",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": "Denormalized: synced from membership by Event"
+      },
+      {
+        "name": "current_tenant",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": true,
+        "recordTarget": "tenant",
+        "comment": "Denormalized: synced from membership by Event"
+      },
+      {
+        "name": "is_active",
+        "kind": "bool",
+        "assert": null,
+        "default": "true",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "name",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "notes",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "password_hash",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": "argon2 hash for agent_session SIGNIN"
+      },
+      {
+        "name": "phone",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "user_type",
+        "kind": "string",
+        "assert": "$value INSIDE ['平台', '租户']",
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "wechat",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      }
+    ]
+  },
+  "tenant": {
+    "name": "tenant",
+    "fields": [
+      {
+        "name": "id",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": "ID"
+      },
+      {
+        "name": "created_at",
+        "kind": "datetime",
+        "assert": null,
+        "default": "time::now()",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "documents",
+        "kind": "record",
+        "assert": null,
+        "default": "[]",
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "document",
+        "comment": null
+      },
+      {
+        "name": "domain_prefix",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "logo_url",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "name",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "primary_color",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "status",
+        "kind": "string",
+        "assert": "$value INSIDE ['active', 'inactive', 'suspended']",
+        "default": "'active'",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "tenant_type",
+        "kind": "string",
+        "assert": "$value INSIDE ['国学机构', '寺院流通处', '福慧社区', '福慧小店']",
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "wechat_merchant_id",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      }
+    ]
+  },
+  "store": {
+    "name": "store",
+    "fields": [
+      {
+        "name": "id",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": "ID"
+      },
+      {
+        "name": "address",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "cover_image",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "created_at",
+        "kind": "datetime",
+        "assert": null,
+        "default": "time::now()",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "description",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "location",
+        "kind": "geometry",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "manager",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": true,
+        "recordTarget": "user",
+        "comment": null
+      },
+      {
+        "name": "name",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "opening_hours",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "phone",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "status",
+        "kind": "string",
+        "assert": "$value INSIDE ['active', 'inactive']",
+        "default": "'active'",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "store_type",
+        "kind": "string",
+        "assert": "$value INSIDE ['旗舰店', '标准店', '流通点', '法会摊位', '社区点']",
+        "default": "'标准店'",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "tenant",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "tenant",
+        "comment": null
+      }
+    ]
+  },
+  "membership": {
+    "name": "membership",
+    "fields": [
+      {
+        "name": "id",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": "ID"
+      },
+      {
+        "name": "can_operate",
+        "kind": "bool",
+        "assert": null,
+        "default": "true",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "in",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "user",
+        "comment": null
+      },
+      {
+        "name": "joined_at",
+        "kind": "datetime",
+        "assert": null,
+        "default": "time::now()",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "left_at",
+        "kind": "datetime",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "notes",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "out",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "tenant",
+        "comment": null
+      },
+      {
+        "name": "role",
+        "kind": "string",
+        "assert": "$value INSIDE ['经理', '业务员', '财务', '门店店长', '店员', '服务人员', '空间负责人']",
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "status",
+        "kind": "string",
+        "assert": "$value INSIDE ['active', 'suspended', 'resigned', 'terminated']",
+        "default": "'active'",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "store",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": true,
+        "recordTarget": "store",
+        "comment": null
+      }
+    ]
+  },
+  "product": {
+    "name": "product",
+    "fields": [
+      {
+        "name": "id",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": "ID"
+      },
+      {
+        "name": "categories",
+        "kind": "record",
+        "assert": null,
+        "default": "[]",
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "product_category",
+        "comment": null
+      },
+      {
+        "name": "channels",
+        "kind": "array",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "content_embedding",
+        "kind": "array",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "cost_price",
+        "kind": "float",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "created_at",
+        "kind": "datetime",
+        "assert": null,
+        "default": "time::now()",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "description",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "detail_image_urls",
+        "kind": "array",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "documents",
+        "kind": "record",
+        "assert": null,
+        "default": "[]",
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "document",
+        "comment": null
+      },
+      {
+        "name": "is_platform_catalog",
+        "kind": "bool",
+        "assert": null,
+        "default": "true",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "main_image_url",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "name",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "notes",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "owner_tenant",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": true,
+        "recordTarget": "tenant",
+        "comment": null
+      },
+      {
+        "name": "price",
+        "kind": "float",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "product_intro",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "sku",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "status",
+        "kind": "string",
+        "assert": "$value INSIDE ['上架', '下架']",
+        "default": "'上架'",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "suppliers",
+        "kind": "record",
+        "assert": null,
+        "default": "[]",
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "organization",
+        "comment": null
+      },
+      {
+        "name": "unit",
+        "kind": "string",
+        "assert": null,
+        "default": "'个'",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      }
+    ]
+  },
+  "product_variant": {
+    "name": "product_variant",
+    "fields": [
+      {
+        "name": "id",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": "ID"
+      },
+      {
+        "name": "created_at",
+        "kind": "datetime",
+        "assert": null,
+        "default": "time::now()",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "image_url",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "is_active",
+        "kind": "bool",
+        "assert": null,
+        "default": "true",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "price",
+        "kind": "float",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "sku",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "spec_name",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "spu",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "product",
+        "comment": null
+      },
+      {
+        "name": "stock",
+        "kind": "int",
+        "assert": null,
+        "default": "0",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      }
+    ]
+  },
+  "product_category": {
+    "name": "product_category",
+    "fields": [
+      {
+        "name": "id",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": "ID"
+      },
+      {
+        "name": "description",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "name",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "slug",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "sort_order",
+        "kind": "int",
+        "assert": null,
+        "default": "0",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      }
+    ]
+  },
+  "tenant_product_selection": {
+    "name": "tenant_product_selection",
+    "fields": [
+      {
+        "name": "id",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": "ID"
+      },
+      {
+        "name": "commission_rate",
+        "kind": "float",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "custom_price",
+        "kind": "float",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "is_active",
+        "kind": "bool",
+        "assert": null,
+        "default": "true",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "selected_at",
+        "kind": "datetime",
+        "assert": null,
+        "default": "time::now()",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "tenant",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "tenant",
+        "comment": null
+      },
+      {
+        "name": "variant",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "product_variant",
+        "comment": null
+      }
+    ]
+  },
+  "store_inventory": {
+    "name": "store_inventory",
+    "fields": [
+      {
+        "name": "id",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": "ID"
+      },
+      {
+        "name": "inv_type",
+        "kind": "string",
+        "assert": "$value INSIDE ['owned', 'consigned', 'self_built']",
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "quantity",
+        "kind": "int",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "store",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "store",
+        "comment": null
+      },
+      {
+        "name": "updated_at",
+        "kind": "datetime",
+        "assert": null,
+        "default": "time::now()",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "variant",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "product_variant",
+        "comment": null
+      }
+    ]
+  },
+  "warehouse": {
+    "name": "warehouse",
+    "fields": [
+      {
+        "name": "id",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": "ID"
+      },
+      {
+        "name": "address",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "name",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      }
+    ]
+  },
+  "inbound": {
+    "name": "inbound",
+    "fields": [
+      {
+        "name": "id",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": "ID"
+      },
+      {
+        "name": "created_at",
+        "kind": "datetime",
+        "assert": null,
+        "default": "time::now()",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "documents",
+        "kind": "record",
+        "assert": null,
+        "default": "[]",
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "document",
+        "comment": null
+      },
+      {
+        "name": "inbound_no",
+        "kind": "string",
+        "assert": null,
+        "default": "fn::gen_flow_code('IB', 'inbound')",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "is_reversed",
+        "kind": "bool",
+        "assert": null,
+        "default": "false",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "linked_order",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": true,
+        "recordTarget": "sales_order",
+        "comment": null
+      },
+      {
+        "name": "linked_outbound",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": true,
+        "recordTarget": "outbound",
+        "comment": null
+      },
+      {
+        "name": "linked_purchase_order",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": true,
+        "recordTarget": "purchase_order",
+        "comment": null
+      },
+      {
+        "name": "notes",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "operator",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": true,
+        "recordTarget": "user",
+        "comment": null
+      },
+      {
+        "name": "purchase_type",
+        "kind": "string",
+        "assert": "$value INSIDE ['采购', '生产', '退货', '样品', '调拨', '寄售退货']",
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "quantity",
+        "kind": "int",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "supplier",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": true,
+        "recordTarget": "organization",
+        "comment": null
+      },
+      {
+        "name": "total_amount",
+        "kind": "float",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "unit",
+        "kind": "string",
+        "assert": null,
+        "default": "'个'",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "unit_price",
+        "kind": "float",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "variant",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "product_variant",
+        "comment": null
+      },
+      {
+        "name": "warehouse",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "warehouse",
+        "comment": null
+      }
+    ]
+  },
+  "outbound": {
+    "name": "outbound",
+    "fields": [
+      {
+        "name": "id",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": "ID"
+      },
+      {
+        "name": "created_at",
+        "kind": "datetime",
+        "assert": null,
+        "default": "time::now()",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "customer",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": true,
+        "recordTarget": "customer",
+        "comment": null
+      },
+      {
+        "name": "documents",
+        "kind": "record",
+        "assert": null,
+        "default": "[]",
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "document",
+        "comment": null
+      },
+      {
+        "name": "is_reversed",
+        "kind": "bool",
+        "assert": null,
+        "default": "false",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "linked_order",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": true,
+        "recordTarget": "sales_order",
+        "comment": null
+      },
+      {
+        "name": "notes",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "operator",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": true,
+        "recordTarget": "user",
+        "comment": null
+      },
+      {
+        "name": "outbound_no",
+        "kind": "string",
+        "assert": null,
+        "default": "fn::gen_flow_code('OB', 'outbound')",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "outbound_type",
+        "kind": "string",
+        "assert": "$value INSIDE ['销售', '铺货', '调拨', '结缘']",
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "quantity",
+        "kind": "int",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "target_store",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": true,
+        "recordTarget": "store",
+        "comment": null
+      },
+      {
+        "name": "target_warehouse",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": true,
+        "recordTarget": "warehouse",
+        "comment": null
+      },
+      {
+        "name": "total_amount",
+        "kind": "float",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "unit",
+        "kind": "string",
+        "assert": null,
+        "default": "'个'",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "unit_price",
+        "kind": "float",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "variant",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "product_variant",
+        "comment": null
+      }
+    ]
+  },
+  "consignment_location": {
+    "name": "consignment_location",
+    "fields": [
+      {
+        "name": "id",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": "ID"
+      },
+      {
+        "name": "address",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "documents",
+        "kind": "record",
+        "assert": null,
+        "default": "[]",
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "document",
+        "comment": null
+      },
+      {
+        "name": "location_type",
+        "kind": "string",
+        "assert": "$value INSIDE ['妙供空间', '福慧空间']",
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "manager",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": true,
+        "recordTarget": "user",
+        "comment": null
+      },
+      {
+        "name": "name",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "store",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": true,
+        "recordTarget": "store",
+        "comment": null
+      },
+      {
+        "name": "tenant",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "tenant",
+        "comment": null
+      }
+    ]
+  },
+  "consignment_stock": {
+    "name": "consignment_stock",
+    "fields": [
+      {
+        "name": "id",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": "ID"
+      },
+      {
+        "name": "last_check_date",
+        "kind": "datetime",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "location",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "consignment_location",
+        "comment": null
+      },
+      {
+        "name": "quantity",
+        "kind": "int",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "variant",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "product_variant",
+        "comment": null
+      }
+    ]
+  },
+  "consignment_check": {
+    "name": "consignment_check",
+    "fields": [
+      {
+        "name": "id",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": "ID"
+      },
+      {
+        "name": "actual_stock",
+        "kind": "int",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "check_date",
+        "kind": "datetime",
+        "assert": null,
+        "default": "time::now()",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "location",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "consignment_location",
+        "comment": null
+      },
+      {
+        "name": "operator",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": true,
+        "recordTarget": "user",
+        "comment": null
+      },
+      {
+        "name": "prev_stock",
+        "kind": "int",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "return_quantity",
+        "kind": "int",
+        "assert": null,
+        "default": "0",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "sold_quantity",
+        "kind": "int",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "status",
+        "kind": "string",
+        "assert": "$value INSIDE ['待处理', '已盘点', '已结算']",
+        "default": "'待处理'",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "total_amount",
+        "kind": "float",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "unit_price",
+        "kind": "float",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "variant",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "product_variant",
+        "comment": null
+      }
+    ]
+  },
+  "restock_request": {
+    "name": "restock_request",
+    "fields": [
+      {
+        "name": "id",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": "ID"
+      },
+      {
+        "name": "created_at",
+        "kind": "datetime",
+        "assert": null,
+        "default": "time::now()",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "documents",
+        "kind": "record",
+        "assert": null,
+        "default": "[]",
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "document",
+        "comment": null
+      },
+      {
+        "name": "operator",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "user",
+        "comment": null
+      },
+      {
+        "name": "quantity",
+        "kind": "int",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "reason",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "request_no",
+        "kind": "string",
+        "assert": null,
+        "default": "fn::gen_flow_code('RR', 'restock_request')",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "status",
+        "kind": "string",
+        "assert": "$value INSIDE ['待处理', '已发货', '已取消']",
+        "default": "'待处理'",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "store",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "store",
+        "comment": null
+      },
+      {
+        "name": "tenant",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "tenant",
+        "comment": null
+      },
+      {
+        "name": "variant",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "product_variant",
+        "comment": null
+      }
+    ]
+  },
+  "product_return": {
+    "name": "product_return",
+    "fields": [
+      {
+        "name": "id",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": "ID"
+      },
+      {
+        "name": "created_at",
+        "kind": "datetime",
+        "assert": null,
+        "default": "time::now()",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "documents",
+        "kind": "record",
+        "assert": null,
+        "default": "[]",
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "document",
+        "comment": null
+      },
+      {
+        "name": "operator",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": true,
+        "recordTarget": "user",
+        "comment": null
+      },
+      {
+        "name": "order",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": true,
+        "recordTarget": "sales_order",
+        "comment": null
+      },
+      {
+        "name": "quantity",
+        "kind": "int",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "reason",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "refund_amount",
+        "kind": "float",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "return_no",
+        "kind": "string",
+        "assert": null,
+        "default": "fn::gen_flow_code('RT', 'product_return')",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "return_type",
+        "kind": "string",
+        "assert": "$value INSIDE ['客户退货', '滞销退货', '质量问题']",
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "status",
+        "kind": "string",
+        "assert": "$value INSIDE ['待处理', '已处理', '已关闭']",
+        "default": "'待处理'",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "store",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": true,
+        "recordTarget": "store",
+        "comment": null
+      },
+      {
+        "name": "tenant",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "tenant",
+        "comment": null
+      },
+      {
+        "name": "variant",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "product_variant",
+        "comment": null
+      },
+      {
+        "name": "warehouse",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": true,
+        "recordTarget": "warehouse",
+        "comment": null
+      }
+    ]
+  },
+  "purchase_order": {
+    "name": "purchase_order",
+    "fields": [
+      {
+        "name": "id",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": "ID"
+      },
+      {
+        "name": "created_at",
+        "kind": "datetime",
+        "assert": null,
+        "default": "time::now()",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "documents",
+        "kind": "record",
+        "assert": null,
+        "default": "[]",
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "document",
+        "comment": null
+      },
+      {
+        "name": "expected_date",
+        "kind": "datetime",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "notes",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "operator",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "user",
+        "comment": null
+      },
+      {
+        "name": "po_no",
+        "kind": "string",
+        "assert": null,
+        "default": "fn::gen_flow_code('PO', 'purchase_order')",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "status",
+        "kind": "string",
+        "assert": "$value INSIDE ['草稿', '已下单', '部分到货', '已完成', '已取消']",
+        "default": "'草稿'",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "supplier",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "organization",
+        "comment": null
+      },
+      {
+        "name": "total_amount",
+        "kind": "float",
+        "assert": null,
+        "default": "0",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      }
+    ]
+  },
+  "purchase_order_item": {
+    "name": "purchase_order_item",
+    "fields": [
+      {
+        "name": "id",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": "ID"
+      },
+      {
+        "name": "notes",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "order",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "purchase_order",
+        "comment": null
+      },
+      {
+        "name": "quantity",
+        "kind": "int",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "received_qty",
+        "kind": "int",
+        "assert": null,
+        "default": "0",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "status",
+        "kind": "string",
+        "assert": "$value INSIDE ['待收货', '部分收货', '已收齐']",
+        "default": "'待收货'",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "total_amount",
+        "kind": "float",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "unit_price",
+        "kind": "float",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "variant",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "product_variant",
+        "comment": null
+      }
+    ]
+  },
+  "sop_task": {
+    "name": "sop_task",
+    "fields": [
+      {
+        "name": "id",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": "ID"
+      },
+      {
+        "name": "assigned_to",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": true,
+        "recordTarget": "user",
+        "comment": null
+      },
+      {
+        "name": "created_at",
+        "kind": "datetime",
+        "assert": null,
+        "default": "time::now()",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "created_by",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "user",
+        "comment": null
+      },
+      {
+        "name": "customer",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": true,
+        "recordTarget": "customer",
+        "comment": null
+      },
+      {
+        "name": "deadline",
+        "kind": "datetime",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "documents",
+        "kind": "record",
+        "assert": null,
+        "default": "[]",
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "document",
+        "comment": null
+      },
+      {
+        "name": "objective",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "recurrence_rule",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "result",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "schedule_type",
+        "kind": "string",
+        "assert": "$value INSIDE ['once', 'recurring']",
+        "default": "'once'",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "scope",
+        "kind": "string",
+        "assert": "$value INSIDE ['chain', 'platform', 'crm']",
+        "default": "'chain'",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "status",
+        "kind": "string",
+        "assert": "$value INSIDE ['待执行', '执行中', '已完成', '已确认', '已取消']",
+        "default": "'待执行'",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "target_mode",
+        "kind": "string",
+        "assert": "$value INSIDE ['all', 'by_type', 'specific']",
+        "default": "'specific'",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "target_store_types",
+        "kind": "array",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "target_stores",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": true,
+        "recordTarget": "store",
+        "comment": null
+      },
+      {
+        "name": "task_type",
+        "kind": "string",
+        "assert": "$value INSIDE ['盘点', '布展', '卫生', '促销', '培训', '调货', '拜访客户', '客户回访', '财务对账', '库存检查', '数据报表', '合同跟进', '其他']",
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "tenant",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": true,
+        "recordTarget": "tenant",
+        "comment": null
+      },
+      {
+        "name": "title",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      }
+    ]
+  },
+  "inventory_count": {
+    "name": "inventory_count",
+    "fields": [
+      {
+        "name": "id",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": "ID"
+      },
+      {
+        "name": "actual_qty",
+        "kind": "int",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "check_date",
+        "kind": "datetime",
+        "assert": null,
+        "default": "time::now()",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "documents",
+        "kind": "record",
+        "assert": null,
+        "default": "[]",
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "document",
+        "comment": null
+      },
+      {
+        "name": "expected_qty",
+        "kind": "int",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "inv_type",
+        "kind": "string",
+        "assert": "$value INSIDE ['owned', 'consigned', 'self_built']",
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "operator",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "user",
+        "comment": null
+      },
+      {
+        "name": "store",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "store",
+        "comment": null
+      },
+      {
+        "name": "task",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "sop_task",
+        "comment": null
+      },
+      {
+        "name": "variant",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "product_variant",
+        "comment": null
+      }
+    ]
+  },
+  "sales_order": {
+    "name": "sales_order",
+    "fields": [
+      {
+        "name": "id",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": "ID"
+      },
+      {
+        "name": "created_at",
+        "kind": "datetime",
+        "assert": null,
+        "default": "time::now()",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "customer",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": true,
+        "recordTarget": "customer",
+        "comment": null
+      },
+      {
+        "name": "documents",
+        "kind": "record",
+        "assert": null,
+        "default": "[]",
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "document",
+        "comment": null
+      },
+      {
+        "name": "h5_user",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": true,
+        "recordTarget": "h5_user",
+        "comment": null
+      },
+      {
+        "name": "notes",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "operator",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": true,
+        "recordTarget": "user",
+        "comment": null
+      },
+      {
+        "name": "order_type",
+        "kind": "string",
+        "assert": "$value INSIDE ['法会项目', '流通处供货', '直销', '分销']",
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "payment_method",
+        "kind": "string",
+        "assert": "$value INSIDE ['wechat_pay', 'wechat_transfer', 'bank_transfer', 'cash', 'other']",
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "shipped_at",
+        "kind": "datetime",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "shipped_by",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": true,
+        "recordTarget": "tenant",
+        "comment": null
+      },
+      {
+        "name": "shipping_address",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "shipping_method",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "so_no",
+        "kind": "string",
+        "assert": null,
+        "default": "fn::gen_flow_code('SO', 'sales_order')",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "status",
+        "kind": "string",
+        "assert": "$value INSIDE ['待确认', '已确认', '已发货', '已完成', '已取消']",
+        "default": "'待确认'",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "store",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": true,
+        "recordTarget": "store",
+        "comment": null
+      },
+      {
+        "name": "tenant",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": true,
+        "recordTarget": "tenant",
+        "comment": null
+      },
+      {
+        "name": "title",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "total_amount",
+        "kind": "float",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "tracking_number",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      }
+    ]
+  },
+  "order_item": {
+    "name": "order_item",
+    "fields": [
+      {
+        "name": "id",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": "ID"
+      },
+      {
+        "name": "is_reversed",
+        "kind": "bool",
+        "assert": null,
+        "default": "false",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "linked_inbound",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": true,
+        "recordTarget": "inbound",
+        "comment": null
+      },
+      {
+        "name": "order",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "sales_order",
+        "comment": null
+      },
+      {
+        "name": "quantity",
+        "kind": "int",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "total_amount",
+        "kind": "float",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "unit_price",
+        "kind": "float",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "variant",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "product_variant",
+        "comment": null
+      }
+    ]
+  },
+  "organization": {
+    "name": "organization",
+    "fields": [
+      {
+        "name": "id",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": "ID"
+      },
+      {
+        "name": "address",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "documents",
+        "kind": "record",
+        "assert": null,
+        "default": "[]",
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "document",
+        "comment": null
+      },
+      {
+        "name": "name",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "notes",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "org_type",
+        "kind": "string",
+        "assert": "$value INSIDE ['供应商', '寺院', '代工厂', '妙供空间', '福慧空间']",
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "phone",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      }
+    ]
+  },
+  "contact": {
+    "name": "contact",
+    "fields": [
+      {
+        "name": "id",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": "ID"
+      },
+      {
+        "name": "name",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "notes",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "organization",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "organization",
+        "comment": null
+      },
+      {
+        "name": "phone",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "title",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "wechat",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      }
+    ]
+  },
+  "customer": {
+    "name": "customer",
+    "fields": [
+      {
+        "name": "id",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": "ID"
+      },
+      {
+        "name": "address",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "assigned_to",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": true,
+        "recordTarget": "user",
+        "comment": null
+      },
+      {
+        "name": "created_at",
+        "kind": "datetime",
+        "assert": null,
+        "default": "time::now()",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "customer_type",
+        "kind": "string",
+        "assert": "$value INSIDE ['寺院', '居士', '福慧空间']",
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "documents",
+        "kind": "record",
+        "assert": null,
+        "default": "[]",
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "document",
+        "comment": null
+      },
+      {
+        "name": "level",
+        "kind": "string",
+        "assert": "$value INSIDE ['普通', '潜力', '大客户']",
+        "default": "'普通'",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "linked_organization",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": true,
+        "recordTarget": "organization",
+        "comment": null
+      },
+      {
+        "name": "name",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "notes",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "organizations",
+        "kind": "record",
+        "assert": null,
+        "default": "[]",
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "organization",
+        "comment": null
+      },
+      {
+        "name": "phone",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "referred_by",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": true,
+        "recordTarget": "customer",
+        "comment": null
+      },
+      {
+        "name": "source",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "source_detail",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "wechat",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      }
+    ]
+  },
+  "communication_log": {
+    "name": "communication_log",
+    "fields": [
+      {
+        "name": "id",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": "ID"
+      },
+      {
+        "name": "communication_date",
+        "kind": "datetime",
+        "assert": null,
+        "default": "time::now()",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "contact",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": true,
+        "recordTarget": "contact",
+        "comment": null
+      },
+      {
+        "name": "customer",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "customer",
+        "comment": null
+      },
+      {
+        "name": "documents",
+        "kind": "record",
+        "assert": null,
+        "default": "[]",
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "document",
+        "comment": null
+      },
+      {
+        "name": "follow_up",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "linked_campaign",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": true,
+        "recordTarget": "sales_campaign",
+        "comment": null
+      },
+      {
+        "name": "linked_demand",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": true,
+        "recordTarget": "demand",
+        "comment": null
+      },
+      {
+        "name": "method",
+        "kind": "string",
+        "assert": "$value INSIDE ['电话', '微信', '上门拜访', '线下见面', '其他']",
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "operator",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "user",
+        "comment": null
+      },
+      {
+        "name": "purpose",
+        "kind": "string",
+        "assert": "$value INSIDE ['主动推介', '随缘需求', '定期回访', '售后', '其他']",
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "summary",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      }
+    ]
+  },
+  "sales_campaign": {
+    "name": "sales_campaign",
+    "fields": [
+      {
+        "name": "id",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": "ID"
+      },
+      {
+        "name": "campaign_no",
+        "kind": "string",
+        "assert": null,
+        "default": "fn::gen_flow_code('CP', 'sales_campaign')",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "created_at",
+        "kind": "datetime",
+        "assert": null,
+        "default": "time::now()",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "created_by",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "user",
+        "comment": null
+      },
+      {
+        "name": "description",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "documents",
+        "kind": "record",
+        "assert": null,
+        "default": "[]",
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "document",
+        "comment": null
+      },
+      {
+        "name": "end_date",
+        "kind": "datetime",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "start_date",
+        "kind": "datetime",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "status",
+        "kind": "string",
+        "assert": "$value INSIDE ['计划中', '进行中', '已完成', '已停止']",
+        "default": "'计划中'",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "title",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      }
+    ]
+  },
+  "campaign_target": {
+    "name": "campaign_target",
+    "fields": [
+      {
+        "name": "id",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": "ID"
+      },
+      {
+        "name": "campaign",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "sales_campaign",
+        "comment": null
+      },
+      {
+        "name": "contacted_at",
+        "kind": "datetime",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "customer",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "customer",
+        "comment": null
+      },
+      {
+        "name": "feedback",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "operator",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "user",
+        "comment": null
+      },
+      {
+        "name": "status",
+        "kind": "string",
+        "assert": "$value INSIDE ['待联系', '已联系', '有意向', '无兴趣', '已完成']",
+        "default": "'待联系'",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      }
+    ]
+  },
+  "demand": {
+    "name": "demand",
+    "fields": [
+      {
+        "name": "id",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": "ID"
+      },
+      {
+        "name": "converted_order",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": true,
+        "recordTarget": "sales_order",
+        "comment": null
+      },
+      {
+        "name": "created_at",
+        "kind": "datetime",
+        "assert": null,
+        "default": "time::now()",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "customer",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "customer",
+        "comment": null
+      },
+      {
+        "name": "demand_type",
+        "kind": "string",
+        "assert": "$value INSIDE ['法会采购', '补货', '定制', '咨询', '售后', '其他']",
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "description",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "documents",
+        "kind": "record",
+        "assert": null,
+        "default": "[]",
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "document",
+        "comment": null
+      },
+      {
+        "name": "operator",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "user",
+        "comment": null
+      },
+      {
+        "name": "priority",
+        "kind": "string",
+        "assert": "$value INSIDE ['紧急', '高', '普通', '低']",
+        "default": "'普通'",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "quoted_amount",
+        "kind": "float",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "status",
+        "kind": "string",
+        "assert": "$value INSIDE ['待处理', '已报价', '已转化', '已关闭']",
+        "default": "'待处理'",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      }
+    ]
+  },
+  "activity": {
+    "name": "activity",
+    "fields": [
+      {
+        "name": "id",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": "ID"
+      },
+      {
+        "name": "cover_image",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "created_at",
+        "kind": "datetime",
+        "assert": null,
+        "default": "time::now()",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "description",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "documents",
+        "kind": "record",
+        "assert": null,
+        "default": "[]",
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "document",
+        "comment": null
+      },
+      {
+        "name": "end_time",
+        "kind": "datetime",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "linked_products",
+        "kind": "array",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "location",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "max_participants",
+        "kind": "int",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "price",
+        "kind": "float",
+        "assert": null,
+        "default": "0",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "registration_deadline",
+        "kind": "datetime",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "start_time",
+        "kind": "datetime",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "status",
+        "kind": "string",
+        "assert": "$value INSIDE ['草稿', '已发布', '已结束', '已取消']",
+        "default": "'草稿'",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "store",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": true,
+        "recordTarget": "store",
+        "comment": null
+      },
+      {
+        "name": "tenant",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "tenant",
+        "comment": null
+      },
+      {
+        "name": "title",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      }
+    ]
+  },
+  "registration": {
+    "name": "registration",
+    "fields": [
+      {
+        "name": "id",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": "ID"
+      },
+      {
+        "name": "activity",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "activity",
+        "comment": null
+      },
+      {
+        "name": "checked_in_at",
+        "kind": "datetime",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "contact_info",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "created_at",
+        "kind": "datetime",
+        "assert": null,
+        "default": "time::now()",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "h5_user",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "h5_user",
+        "comment": null
+      },
+      {
+        "name": "quantity",
+        "kind": "int",
+        "assert": null,
+        "default": "1",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "status",
+        "kind": "string",
+        "assert": "$value INSIDE ['待确认', '已确认', '已取消', '已签到']",
+        "default": "'待确认'",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      }
+    ]
+  },
+  "account": {
+    "name": "account",
+    "fields": [
+      {
+        "name": "id",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": "ID"
+      },
+      {
+        "name": "account_type",
+        "kind": "string",
+        "assert": "$value INSIDE ['微信商户', '银行账户', '现金', '其他']",
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "name",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "notes",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      }
+    ]
+  },
+  "transaction": {
+    "name": "transaction",
+    "fields": [
+      {
+        "name": "id",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": "ID"
+      },
+      {
+        "name": "account",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": true,
+        "recordTarget": "account",
+        "comment": null
+      },
+      {
+        "name": "amount",
+        "kind": "float",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "category",
+        "kind": "string",
+        "assert": "$value INSIDE ['销售收入', '采购支出', '物流', '运营', '佣金支出', '佣金捐赠', '退款', '随喜捐赠', '其他']",
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "documents",
+        "kind": "record",
+        "assert": null,
+        "default": "[]",
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "document",
+        "comment": null
+      },
+      {
+        "name": "is_reversed",
+        "kind": "bool",
+        "assert": null,
+        "default": "false",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "linked_commission",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": true,
+        "recordTarget": "commission_record",
+        "comment": null
+      },
+      {
+        "name": "linked_order",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": true,
+        "recordTarget": "sales_order",
+        "comment": null
+      },
+      {
+        "name": "linked_organization",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": true,
+        "recordTarget": "organization",
+        "comment": null
+      },
+      {
+        "name": "notes",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "operator",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": true,
+        "recordTarget": "user",
+        "comment": null
+      },
+      {
+        "name": "tx_date",
+        "kind": "datetime",
+        "assert": null,
+        "default": "time::now()",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "tx_no",
+        "kind": "string",
+        "assert": null,
+        "default": "fn::gen_flow_code('TX', 'transaction')",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "tx_type",
+        "kind": "string",
+        "assert": "$value INSIDE ['收入', '支出', '转账']",
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      }
+    ]
+  },
+  "settlement": {
+    "name": "settlement",
+    "fields": [
+      {
+        "name": "id",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": "ID"
+      },
+      {
+        "name": "balance",
+        "kind": "float",
+        "assert": null,
+        "default": "0",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "created_at",
+        "kind": "datetime",
+        "assert": null,
+        "default": "time::now()",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "documents",
+        "kind": "record",
+        "assert": null,
+        "default": "[]",
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "document",
+        "comment": null
+      },
+      {
+        "name": "notes",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "period_end",
+        "kind": "datetime",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "period_start",
+        "kind": "datetime",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "settlement_no",
+        "kind": "string",
+        "assert": null,
+        "default": "fn::gen_flow_code('STL', 'settlement')",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "status",
+        "kind": "string",
+        "assert": "$value INSIDE ['待确认', '已确认', '已结算']",
+        "default": "'待确认'",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "tenant",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "tenant",
+        "comment": null
+      },
+      {
+        "name": "total_payment_received",
+        "kind": "float",
+        "assert": null,
+        "default": "0",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "total_purchase_amount",
+        "kind": "float",
+        "assert": null,
+        "default": "0",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      }
+    ]
+  },
+  "commission_setting": {
+    "name": "commission_setting",
+    "fields": [
+      {
+        "name": "id",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": "ID"
+      },
+      {
+        "name": "_r",
+        "kind": "bool",
+        "assert": "$this.self_ratio + $this.donate_ratio <= 1f",
+        "default": "true",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "documents",
+        "kind": "record",
+        "assert": null,
+        "default": "[]",
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "document",
+        "comment": null
+      },
+      {
+        "name": "donate_ratio",
+        "kind": "float",
+        "assert": null,
+        "default": "0",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "donate_target",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": true,
+        "recordTarget": "organization",
+        "comment": null
+      },
+      {
+        "name": "self_ratio",
+        "kind": "float",
+        "assert": null,
+        "default": "1f",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "service_person",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "user",
+        "comment": null
+      },
+      {
+        "name": "updated_at",
+        "kind": "datetime",
+        "assert": null,
+        "default": "time::now()",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      }
+    ]
+  },
+  "commission_record": {
+    "name": "commission_record",
+    "fields": [
+      {
+        "name": "id",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": "ID"
+      },
+      {
+        "name": "created_at",
+        "kind": "datetime",
+        "assert": null,
+        "default": "time::now()",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "documents",
+        "kind": "record",
+        "assert": null,
+        "default": "[]",
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "document",
+        "comment": null
+      },
+      {
+        "name": "donate_amount",
+        "kind": "float",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "order",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "sales_order",
+        "comment": null
+      },
+      {
+        "name": "self_amount",
+        "kind": "float",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "service_person",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "user",
+        "comment": null
+      },
+      {
+        "name": "settled_at",
+        "kind": "datetime",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "status",
+        "kind": "string",
+        "assert": "$value INSIDE ['待结算', '已结算', '已提现', '已捐赠']",
+        "default": "'待结算'",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "total_commission",
+        "kind": "float",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "variant",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "product_variant",
+        "comment": null
+      }
+    ]
+  },
+  "h5_user": {
+    "name": "h5_user",
+    "fields": [
+      {
+        "name": "id",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": "ID"
+      },
+      {
+        "name": "addresses",
+        "kind": "array",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "avatar",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "created_at",
+        "kind": "datetime",
+        "assert": null,
+        "default": "time::now()",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "name",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "phone",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "tenant",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "tenant",
+        "comment": null
+      },
+      {
+        "name": "wechat_openid",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      }
+    ]
+  },
+  "service_binding": {
+    "name": "service_binding",
+    "fields": [
+      {
+        "name": "id",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": "ID"
+      },
+      {
+        "name": "created_at",
+        "kind": "datetime",
+        "assert": null,
+        "default": "time::now()",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "h5_user",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "h5_user",
+        "comment": null
+      },
+      {
+        "name": "service_person",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "user",
+        "comment": null
+      },
+      {
+        "name": "tenant",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "tenant",
+        "comment": null
+      }
+    ]
+  },
+  "cart": {
+    "name": "cart",
+    "fields": [
+      {
+        "name": "id",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": "ID"
+      },
+      {
+        "name": "created_at",
+        "kind": "datetime",
+        "assert": null,
+        "default": "time::now()",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "h5_user",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "h5_user",
+        "comment": null
+      },
+      {
+        "name": "quantity",
+        "kind": "int",
+        "assert": null,
+        "default": "1",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "tenant",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "tenant",
+        "comment": null
+      },
+      {
+        "name": "updated_at",
+        "kind": "datetime",
+        "assert": null,
+        "default": "time::now()",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "variant",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "product_variant",
+        "comment": null
+      }
+    ]
+  },
+  "favorite": {
+    "name": "favorite",
+    "fields": [
+      {
+        "name": "id",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": "ID"
+      },
+      {
+        "name": "created_at",
+        "kind": "datetime",
+        "assert": null,
+        "default": "time::now()",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "h5_user",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "h5_user",
+        "comment": null
+      },
+      {
+        "name": "product_image",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "product_name",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "product_price",
+        "kind": "float",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "variant",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "product_variant",
+        "comment": null
+      }
+    ]
+  },
+  "banner": {
+    "name": "banner",
+    "fields": [
+      {
+        "name": "id",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": "ID"
+      },
+      {
+        "name": "image_url",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "is_active",
+        "kind": "bool",
+        "assert": null,
+        "default": "true",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "link_type",
+        "kind": "string",
+        "assert": "$value INSIDE ['product', 'activity', 'url']",
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "link_value",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "sort_order",
+        "kind": "int",
+        "assert": null,
+        "default": "0",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "tenant",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "tenant",
+        "comment": null
+      },
+      {
+        "name": "title",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      }
+    ]
+  },
+  "home_recommendation": {
+    "name": "home_recommendation",
+    "fields": [
+      {
+        "name": "id",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": "ID"
+      },
+      {
+        "name": "image_url",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "is_active",
+        "kind": "bool",
+        "assert": null,
+        "default": "true",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "rec_type",
+        "kind": "string",
+        "assert": "$value INSIDE ['product', 'activity', 'hot', 'new']",
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "sort_order",
+        "kind": "int",
+        "assert": null,
+        "default": "0",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "target_id",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "tenant",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "tenant",
+        "comment": null
+      },
+      {
+        "name": "title",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      }
+    ]
+  },
+  "dharma_event": {
+    "name": "dharma_event",
+    "fields": [
+      {
+        "name": "id",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": "ID"
+      },
+      {
+        "name": "created_at",
+        "kind": "datetime",
+        "assert": null,
+        "default": "time::now()",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "documents",
+        "kind": "record",
+        "assert": null,
+        "default": "[]",
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "document",
+        "comment": null
+      },
+      {
+        "name": "event_date",
+        "kind": "datetime",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "event_no",
+        "kind": "string",
+        "assert": null,
+        "default": "fn::gen_flow_code('DE', 'dharma_event')",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "event_type",
+        "kind": "string",
+        "assert": "$value INSIDE ['水陆法会', '开光庆典', '禅修营', '佛七', '其他']",
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "notes",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "operator",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": true,
+        "recordTarget": "user",
+        "comment": null
+      },
+      {
+        "name": "orders",
+        "kind": "record",
+        "assert": null,
+        "default": "[]",
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "sales_order",
+        "comment": null
+      },
+      {
+        "name": "status",
+        "kind": "string",
+        "assert": "$value INSIDE ['筹备中', '执行中', '已完成', '已取消']",
+        "default": "'筹备中'",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "temple",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "organization",
+        "comment": null
+      },
+      {
+        "name": "title",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "total_amount",
+        "kind": "float",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      }
+    ]
+  },
+  "event_material": {
+    "name": "event_material",
+    "fields": [
+      {
+        "name": "id",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": "ID"
+      },
+      {
+        "name": "_check",
+        "kind": "bool",
+        "assert": "$this.variant != NONE OR $this.spu != NONE",
+        "default": "true",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "event",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "dharma_event",
+        "comment": null
+      },
+      {
+        "name": "notes",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "quantity",
+        "kind": "int",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "spu",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": true,
+        "recordTarget": "product",
+        "comment": null
+      },
+      {
+        "name": "total_amount",
+        "kind": "float",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "unit_price",
+        "kind": "float",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "variant",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": true,
+        "recordTarget": "product_variant",
+        "comment": null
+      }
+    ]
+  },
+  "document": {
+    "name": "document",
+    "fields": [
+      {
+        "name": "id",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": "ID"
+      },
+      {
+        "name": "created_at",
+        "kind": "datetime",
+        "assert": null,
+        "default": "time::now()",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "description",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "doc_category",
+        "kind": "string",
+        "assert": "$value INSIDE ['任务执行', '财务凭证', '合同', '客户档案', '活动', '产品', '文件', '其他']",
+        "default": "'其他'",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "file_size",
+        "kind": "int",
+        "assert": null,
+        "default": null,
+        "isOption": true,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "file_type",
+        "kind": "string",
+        "assert": "$value INSIDE ['image', 'pdf', 'doc', 'sheet', 'other']",
+        "default": "'other'",
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "file_url",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "name",
+        "kind": "string",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": false,
+        "recordTarget": null,
+        "comment": null
+      },
+      {
+        "name": "uploaded_by",
+        "kind": "record",
+        "assert": null,
+        "default": null,
+        "isOption": false,
+        "isRecord": true,
+        "recordTarget": "user",
+        "comment": null
+      }
+    ]
+  }
+}
