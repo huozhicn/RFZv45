@@ -33,14 +33,14 @@ const version = __COMMIT_HASH__
       </n-layout-sider>
 
       <n-layout>
-        <n-layout-content style="position:relative;padding-bottom:72px">
+        <n-layout-content style="padding-bottom:72px">
           <div style="padding:40px 24px;min-height:calc(100vh - 72px);text-align:center;color:#999">
             <div style="font-size:48px;margin-bottom:16px">💬</div>
             <div style="font-size:18px;font-weight:600;color:#666">对话即操作</div>
             <div style="font-size:14px;margin-top:8px">在下方输入指令</div>
           </div>
 
-          <div style="position:absolute;bottom:0;left:0;right:0;border-top:1px solid #e0e0e0;padding:12px 24px;background:#fff;display:flex;gap:8px;align-items:flex-end">
+          <div style="position:fixed;bottom:0;left:0;right:0;border-top:1px solid #e0e0e0;padding:12px 24px;background:#fff;display:flex;gap:8px;align-items:flex-end;z-index:10">
             <n-input
               v-model:value="inputText"
               type="textarea"
