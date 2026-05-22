@@ -1,22 +1,12 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '@/stores/auth'
 import { sdbQuery } from '@/lib/sdb'
 import { loadSchemaMeta, type TableMeta } from '@/lib/schema'
-import { subscribeAgentMessages } from '@/agent/live-query'
-import { dispatchActions, type TableController, type DetailController } from '@/agent/dispatcher'
-import type { AgentAction, AgentMessage } from '@/agent/types'
+import type { TableController, DetailController } from '@/agent/dispatcher'
 import LoginView from '@/pages/LoginView'
 import SchemaTable from '@/components/SchemaTable'
 import DetailPanel from '@/components/DetailPanel'
-
-interface ChatMsg {
-  id: string
-  role: 'user' | 'agent'
-  text: string
-  status: 'pending' | 'done' | 'error'
-  actions: AgentAction[]
-  timestamp: string
-}
+import ChatPanel from '@/components/ChatPanel'
 
 export default function App() {
   const auth = useAuth()
@@ -31,16 +21,23 @@ export default function App() {
   const [detailRecordId, setDetailRecordId] = useState<string | null>(null)
   const [detailPrefill, setDetailPrefill] = useState<Record<string, unknown>>()
 
-  // Chat
-  const sessionId = useRef(`sess_${Date.now()}`)
-  const [chatMessages, setChatMessages] = useState<ChatMsg[]>([])
-  const [inputText, setInputText] = useState('')
-  const [sending, setSending] = useState(false)
-  const scrollRef = useRef<HTMLDivElement>(null)
-
-  // Table refs
+  // Table refs — shared with ChatPanel for agent actions
   const tableRef = useRef<TableController | null>(null)
   const tableRefs = useRef<Map<string, TableController>>(new Map())
+
+  // Detail controller — passed to ChatPanel for agent open_detail/open_create actions
+  const detailCtrl: DetailController = {
+    openDetail(rid) { setDetailRecordId(rid); setDetailMode('view'); setDetailVisible(true) },
+    openCreate(t, pf) {
+      setCurrentTable(t)
+      setCurrentMeta(schemaMeta.get(t) ?? null)
+      setDetailRecordId(null)
+      setDetailMode('create')
+      setDetailPrefill(pf)
+      setDetailVisible(true)
+      window.location.hash = `#/tables/${t}`
+    },
+  }
 
   // @ts-ignore — replaced by vite define
   const version: string = __COMMIT_HASH__
@@ -62,7 +59,7 @@ export default function App() {
   // Hash router
   useEffect(() => {
     function handleHash() {
-      const hash = window.location.hash.slice(1) // remove #
+      const hash = window.location.hash.slice(1)
       const match = hash.match(/^\/tables\/(\w+)/)
       if (match) {
         setCurrentTable(match[1])
@@ -78,7 +75,6 @@ export default function App() {
     window.location.hash = `#/tables/${name}`
   }
 
-  // Detail handlers
   function handleRowClick(recordId: string) {
     setDetailRecordId(recordId)
     setDetailMode('view')
@@ -93,69 +89,10 @@ export default function App() {
   }
   function handleDetailClose() {
     setDetailVisible(false)
+    // Save table ref to shared map for agent actions
+    if (tableRef.current) tableRefs.current.set(currentTable, tableRef.current)
     tableRef.current?.refresh()
   }
-
-  // Send message
-  async function sendMessage() {
-    const text = inputText.trim()
-    if (!text || sending) return
-    setSending(true)
-    try {
-      const result = await sdbQuery(
-        `INSERT INTO agent_message { user_input: $input, status: 'pending', session_id: $sid, created_by: $uid }`,
-        { input: text, sid: sessionId.current, uid: auth.user?.id ?? '' },
-        auth.token
-      )
-      setChatMessages(prev => [...prev, {
-        id: result?.[0]?.id ?? '', role: 'user', text, status: 'pending',
-        actions: [], timestamp: new Date().toISOString(),
-      }])
-      setInputText('')
-      setTimeout(scrollChatBottom, 100)
-    } catch (err: any) {
-      console.error('[App] send failed:', err.message)
-    } finally {
-      setSending(false)
-    }
-  }
-
-  function handleKeydown(e: React.KeyboardEvent) {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() }
-  }
-
-  function scrollChatBottom() {
-    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight
-  }
-
-  // Agent response handler
-  const handleAgentResponse = useCallback((row: AgentMessage) => {
-    setChatMessages(prev => [...prev, {
-      id: row.id + '_agent', role: 'agent',
-      text: row.response ?? '',
-      status: (row.status as 'done' | 'error'),
-      actions: row.actions || [],
-      timestamp: row.created_at || '',
-    }])
-    if (tableRef.current) tableRefs.current.set(currentTable, tableRef.current)
-    const detailCtrl: DetailController = {
-      openDetail(rid) { setDetailRecordId(rid); setDetailMode('view'); setDetailVisible(true) },
-      openCreate(t, pf) { setCurrentTable(t); setCurrentMeta(schemaMeta.get(t) ?? null); setDetailRecordId(null); setDetailMode('create'); setDetailPrefill(pf); setDetailVisible(true); window.location.hash = `#/tables/${t}` },
-    }
-    dispatchActions(row.actions || [], {
-      router: null as any, tableRefs: tableRefs.current, detailRef: detailCtrl,
-    })
-    setTimeout(scrollChatBottom, 100)
-  }, [currentTable, schemaMeta])
-
-  // Live query
-  useEffect(() => {
-    if (!auth.token) return
-    const unsub = subscribeAgentMessages(sessionId.current, (rows) => {
-      for (const row of rows) handleAgentResponse(row)
-    }, auth.token)
-    return unsub
-  }, [auth.token, handleAgentResponse])
 
   if (!auth.isAuthenticated) return <LoginView />
 
@@ -163,12 +100,10 @@ export default function App() {
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
       {/* Sidebar */}
       <div style={{
-        width: 220,
-        minWidth: 220,
+        width: 220, minWidth: 220,
         borderRight: '1px solid #e8e8e8',
         background: '#fafafa',
-        display: 'flex',
-        flexDirection: 'column',
+        display: 'flex', flexDirection: 'column',
         overflow: 'hidden',
       }}>
         <div style={{ padding: '16px', fontWeight: 700, fontSize: 15, flexShrink: 0 }}>
@@ -197,103 +132,32 @@ export default function App() {
         </div>
       </div>
 
-      {/* Main content */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-        {/* Scrollable area */}
-        <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', padding: '16px 24px' }}>
+      {/* Main content — table */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
+        <div style={{ flex: 1, overflowY: 'auto', padding: '16px 24px' }}>
           {currentTable ? (
-            <div style={{ marginBottom: 16 }}>
-              <SchemaTable
-                ref={tableRef}
-                tableName={currentTable}
-                meta={currentMeta}
-                onRowClick={handleRowClick}
-                onCreate={handleCreate}
-              />
-            </div>
-          ) : chatMessages.length === 0 ? (
+            <SchemaTable
+              ref={tableRef}
+              tableName={currentTable}
+              meta={currentMeta}
+              onRowClick={handleRowClick}
+              onCreate={handleCreate}
+            />
+          ) : (
             <div style={{ textAlign: 'center', padding: '80px 0', color: '#999' }}>
-              <div style={{ fontSize: 48, marginBottom: 16 }}>💬</div>
-              <div style={{ fontSize: 18, fontWeight: 600, color: '#666', marginBottom: 8 }}>对话即操作</div>
-              <div style={{ fontSize: 14 }}>👈 选择左侧表 或 💬 在下方对话中输入指令</div>
+              <div style={{ fontSize: 48, marginBottom: 16 }}>📋</div>
+              <div style={{ fontSize: 18, fontWeight: 600, color: '#666', marginBottom: 8 }}>模式驱动 ERP</div>
+              <div style={{ fontSize: 14 }}>👈 选择左侧表 或 💬 在右侧对话中输入指令</div>
               <div style={{ fontSize: 13, color: '#bbb', marginTop: 4 }}>
                 试试：「看库存」「新建客户张三」
               </div>
             </div>
-          ) : null}
-
-          {/* Chat bubbles */}
-          {chatMessages.map(msg => (
-            <div key={msg.id} style={{ marginBottom: 16 }}>
-              <div style={{ display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
-                <div style={{
-                  maxWidth: '75%', padding: '10px 16px', borderRadius: 12,
-                  background: msg.role === 'user' ? '#e8f0fe' : '#f1f3f4',
-                  fontSize: 14, lineHeight: 1.6, whiteSpace: 'pre-wrap', wordBreak: 'break-word',
-                }}>
-                  {msg.status === 'pending' && <div style={{ color: '#999', fontSize: 12, marginBottom: 4 }}>⏳ 思考中...</div>}
-                  {msg.status === 'error' && <div style={{ color: '#d93025', fontSize: 12, marginBottom: 4 }}>⚠ 出错</div>}
-                  {msg.text}
-                  {msg.actions?.length > 0 && (
-                    <div style={{ marginTop: 8, display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                      {msg.actions.map((a, i) => (
-                        <span key={i} style={{
-                          padding: '2px 6px', background: '#e6f4ff', borderRadius: 4,
-                          fontSize: 11, color: '#1677ff',
-                        }}>{a.type}</span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div style={{
-                fontSize: 11, color: '#aaa', marginTop: 4,
-                textAlign: msg.role === 'user' ? 'right' : 'left',
-              }}>
-                {msg.role === 'user' ? '我' : 'Agent'} {new Date(msg.timestamp).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Bottom input — flex child, stays at bottom of right column */}
-        <div style={{
-          borderTop: '1px solid #e0e0e0', padding: '12px 24px',
-          background: '#fff', display: 'flex', gap: 8, alignItems: 'flex-end',
-          flexShrink: 0,
-        }}>
-          <textarea
-            value={inputText}
-            onChange={e => setInputText(e.target.value)}
-            onKeyDown={handleKeydown}
-            placeholder="输入指令... (Enter 发送，Shift+Enter 换行)"
-            disabled={sending}
-            rows={1}
-            style={{
-              flex: 1, padding: '10px 16px', border: '1px solid #d9d9d9',
-              borderRadius: 20, fontSize: 14, resize: 'none',
-              fontFamily: 'inherit', outline: 'none',
-            }}
-            onInput={e => {
-              const el = e.currentTarget
-              el.style.height = 'auto'
-              el.style.height = Math.min(el.scrollHeight, 120) + 'px'
-            }}
-          />
-          <button
-            onClick={sendMessage}
-            disabled={sending || !inputText.trim()}
-            style={{
-              padding: '10px 24px', background: sending ? '#91caff' : '#1677ff',
-              color: '#fff', border: 'none', borderRadius: 20, fontSize: 14,
-              cursor: sending ? 'not-allowed' : 'pointer', fontWeight: 500,
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {sending ? '...' : '发送'}
-          </button>
+          )}
         </div>
       </div>
+
+      {/* Chat panel — right side */}
+      <ChatPanel tableRefs={tableRefs} currentTable={currentTable} detailCtrl={detailCtrl} />
 
       {/* Detail drawer */}
       <DetailPanel
