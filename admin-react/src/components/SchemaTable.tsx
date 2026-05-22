@@ -113,10 +113,12 @@ const SchemaTable = forwardRef<TableController, Props>(({ tableName, meta, onRow
             placeholder="搜索..."
             style={{ width: 200, padding: '6px 10px', border: '1px solid #d9d9d9', borderRadius: 6, fontSize: 13 }}
           />
-          <button onClick={onCreate} style={{
-            padding: '6px 14px', background: '#1677ff', color: '#fff',
-            border: 'none', borderRadius: 6, fontSize: 13, cursor: 'pointer'
-          }}>+ 新建</button>
+          {meta.canCreate !== false && (
+            <button onClick={onCreate} style={{
+              padding: '6px 14px', background: '#1677ff', color: '#fff',
+              border: 'none', borderRadius: 6, fontSize: 13, cursor: 'pointer'
+            }}>+ 新建</button>
+          )}
         </div>
         <div style={{ display: 'flex', gap: 4, alignItems: 'center', fontSize: 13, color: '#666' }}>
           <button disabled={page <= 1} onClick={() => setPage(p => p - 1)}
