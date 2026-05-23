@@ -24,7 +24,7 @@ interface Props {
 
 export default function ChatPanel({ tableRefs, currentTable, detailCtrl }: Props) {
   const auth = useAuth()
-  const [sessionId, setSessionId] = useState(`sess_${Date.now()}`)
+  const sessionIdRef = useRef(`sess_${Date.now()}`)
   const [messages, setMessages] = useState<ChatMsg[]>([])
   const [inputText, setInputText] = useState('')
   const [attachments, setAttachments] = useState<Attachment[]>([])
@@ -91,7 +91,7 @@ export default function ChatPanel({ tableRefs, currentTable, detailCtrl }: Props
         {
           input: text,
           atts: attachments.length > 0 ? attachments : null,
-          sid: sessionId,
+          sid: sessionIdRef.current,
           uid: auth.user?.id ?? '',
         },
         auth.token
@@ -120,7 +120,7 @@ export default function ChatPanel({ tableRefs, currentTable, detailCtrl }: Props
   function clearHistory() {
     setMessages([])
     setAttachments([])
-    setSessionId(`sess_${Date.now()}`)
+    sessionIdRef.current = `sess_${Date.now()}`
   }
 
   // ── confirm ──
@@ -169,11 +169,11 @@ export default function ChatPanel({ tableRefs, currentTable, detailCtrl }: Props
 
   useEffect(() => {
     if (!auth.token) return
-    const unsub = subscribeAgentMessages(sessionId, (rows) => {
+    const unsub = subscribeAgentMessages(sessionIdRef.current, (rows) => {
       for (const row of rows) handleAgentResponse(row)
     }, auth.token)
     return unsub
-  }, [auth.token, sessionId, handleAgentResponse])
+  }, [auth.token, handleAgentResponse])
 
   // ── file size helper ──
 
