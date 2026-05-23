@@ -22,6 +22,12 @@ export default function DetailPanel({ visible, tableName, meta, recordId, mode, 
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
+  function fmtDatetime(val: any): string {
+    const s = String(val)
+    const m = s.match(/^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}:\d{2})/)
+    return m ? `${m[1]} ${m[2]}` : s
+  }
+
   useEffect(() => {
     if (!visible) return
     if (mode === 'create') {
@@ -131,6 +137,17 @@ export default function DetailPanel({ visible, tableName, meta, recordId, mode, 
                     ? (formData[field.name] as any).name || (formData[field.name] as any).sku || (formData[field.name] as any).title || String(formData[field.name].id || formData[field.name])
                     : String(formData[field.name] ?? '-')}
                 </span>
+              ) : field.kind === 'datetime' ? (
+                mode === 'view' ? (
+                  <span style={{ fontSize: 13, color: '#333' }}>{fmtDatetime(formData[field.name] ?? '-')}</span>
+                ) : (
+                  <input
+                    type="text"
+                    value={fmtDatetime(formData[field.name] ?? '')}
+                    onChange={e => setFormData(d => ({ ...d, [field.name]: e.target.value }))}
+                    style={{ width: '100%', padding: '6px 10px', border: '1px solid #d9d9d9', borderRadius: 6, fontSize: 13, boxSizing: 'border-box' }}
+                  />
+                )
               ) : (
                 <input
                   type={field.kind === 'int' || field.kind === 'float' ? 'number' : 'text'}

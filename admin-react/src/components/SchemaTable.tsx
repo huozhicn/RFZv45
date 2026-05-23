@@ -29,6 +29,7 @@ function renderCell(row: any, field: FieldMeta): string {
   if (field.isRecord && typeof val === 'object' && val !== null) {
     return val.name || val.sku || val.title || val.display_name || val.id || '-'
   }
+  if (field.kind === 'datetime') return fmtDatetime(val)
   if (field.assert) {
     const enums = extractEnumValues(field.assert)
     if (enums.length > 0 && enums.length <= 8) {
@@ -37,6 +38,13 @@ function renderCell(row: any, field: FieldMeta): string {
   }
   if (typeof val === 'boolean') return val ? '是' : '否'
   return String(val)
+}
+
+function fmtDatetime(val: any): string {
+  const s = String(val)
+  // Truncate ISO 8601 to seconds: "2026-05-23T02:03:20.181667652Z" → "2026-05-23 02:03:20"
+  const m = s.match(/^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}:\d{2})/)
+  return m ? `${m[1]} ${m[2]}` : s
 }
 
 const SchemaTable = forwardRef<TableController, Props>(({ tableName, meta, onRowClick }, ref) => {
