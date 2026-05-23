@@ -388,42 +388,42 @@ export default function ChatPanel({ tableRefs, currentTable, detailCtrl }: Props
 
           {/* bottom bar */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            {/* clear button */}
-            <button
-              onClick={clearHistory}
-              title="清空对话"
-              disabled={messages.length === 0}
-              style={{
-                width: 32, height: 32, borderRadius: 8,
-                border: '1px solid #d9d9d9', background: '#fff',
-                fontSize: 14, cursor: messages.length === 0 ? 'not-allowed' : 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: messages.length === 0 ? '#ccc' : '#666',
-                opacity: messages.length === 0 ? 0.4 : 1,
-              }}
-            >🗑️</button>
-            {/* attach button */}
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              title="添加附件"
-              style={{
-                width: 32, height: 32, borderRadius: 8,
-                border: '1px solid #d9d9d9', background: '#fff',
-                fontSize: 16, cursor: 'pointer', display: 'flex',
-                alignItems: 'center', justifyContent: 'center',
-                color: '#666',
-              }}
-            >📎</button>
-          </div>
-            <input
-              ref={fileInputRef}
-              type="file"
-              multiple
-              accept="image/*,.pdf,.csv,.xlsx,.docx,.txt"
-              style={{ display: 'none' }}
-              onChange={e => { if (e.target.files) { addFiles(e.target.files); e.target.value = '' } }}
-            />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              {/* clear button */}
+              <button
+                onClick={clearHistory}
+                title="清空对话"
+                disabled={messages.length === 0}
+                style={{
+                  width: 32, height: 32, borderRadius: 8,
+                  border: '1px solid #d9d9d9', background: '#fff',
+                  fontSize: 14, cursor: messages.length === 0 ? 'not-allowed' : 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: messages.length === 0 ? '#ccc' : '#666',
+                  opacity: messages.length === 0 ? 0.4 : 1,
+                }}
+              >🗑️</button>
+              {/* attach button */}
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                title="添加附件"
+                style={{
+                  width: 32, height: 32, borderRadius: 8,
+                  border: '1px solid #d9d9d9', background: '#fff',
+                  fontSize: 16, cursor: 'pointer', display: 'flex',
+                  alignItems: 'center', justifyContent: 'center',
+                  color: '#666',
+                }}
+              >📎</button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept="image/*,.pdf,.csv,.xlsx,.docx,.txt"
+                style={{ display: 'none' }}
+                onChange={e => { if (e.target.files) { addFiles(e.target.files); e.target.value = '' } }}
+              />
+            </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <span style={{ fontSize: 10, color: '#bbb' }}>Enter 发送 · Shift+Enter 换行</span>
