@@ -31,6 +31,10 @@ PROMPTS = CFG["prompts"]
 RT = CFG["runtime"]
 PROMPTS_DIR = ROOT / PROMPTS["dir"]
 
+# 消息去重：防止同一消息被并发处理多次（竞态条件）
+_processing: set[str] = set()
+_proc_lock = asyncio.Lock()
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
@@ -153,110 +157,131 @@ async def get_user_store(db: AsyncSurreal, user_id: str) -> str | None:
 # ── 消息处理 ──
 
 async def process_message(db: AsyncSurreal, msg: dict, sem: asyncio.Semaphore):
-    async with sem:
-        msg_id = msg["id"]
-        user_input = msg.get("user_input", "") or ""
-        created_by = str(msg.get("created_by", ""))
+    record_id = msg["id"]           # 保留原始 RecordID，给 DB 查询用
+    msg_id = str(record_id)         # 转字符串，给 _processing set 用
 
-        log.info(f"处理 {msg_id}: {user_input[:80]}")
+    # ── 去重：同一消息不重复处理 ──
+    async with _proc_lock:
+        if msg_id in _processing:
+            log.info(f"跳过 {msg_id}: 已在处理中")
+            return
+        _processing.add(msg_id)
 
-        try:
-            await db.query(f"UPDATE {msg_id} SET status = 'processing';")
+    try:
+        async with sem:
+            user_input = msg.get("user_input", "") or ""
+            created_by = str(msg.get("created_by", ""))
 
-            # ── 用户上下文 ──
-            user = await get_user_info(db, created_by) if created_by else {}
-            role = user.get("current_role")
-            store_id = await get_user_store(db, created_by) if created_by else None
+            # ── 原子认领：确认消息仍是 pending 才处理 ──
+            check = await db.query(f"SELECT status FROM {record_id};")
+            rows = _extract_rows(check)
+            current_status = rows[0].get("status") if rows else None
+            if current_status != "pending":
+                log.info(f"跳过 {msg_id}: 状态已是 {current_status}")
+                return
 
-            # ── Step 1: LLM 生成 SQL ──
-            step1_prompt = get_cached_prompt(role)
-            step1_msg = user_input
-            if store_id:
-                step1_msg = (
-                    f"当前用户绑定的门店: {store_id}\n\n"
-                    f"用户名: {user.get('name', '未知')}\n"
-                    f"用户消息: {user_input}"
-                )
-            # 也把用户角色注入
-            step1_msg = f"[用户角色: {role or '未知'}]\n{step1_msg}"
+            log.info(f"处理 {msg_id}: {user_input[:80]}")
 
-            response1 = await call_llm(step1_prompt, step1_msg, temp=0.1)
-            plan = parse_json_from_response(response1)
-            intent = plan.get("intent", "chat")
-
-            log.info(f"  {msg_id} intent={intent} sql={str(plan.get('sql',''))[:80]}")
-
-            final_response = ""
-            final_actions = []
-
-            if intent == "chat":
-                # 纯聊天，直接返回
-                final_response = response1.split("```")[0].strip()
-                # 从 Step1 回复中提取 actions
-                final_actions = parse_actions_from_response(response1)
-
-            elif intent in ("query", "action"):
-                sql = plan.get("sql", "")
-                vars_dict = plan.get("vars", {})
-
-                if not sql:
-                    final_response = "抱歉，我无法理解这个查询。请换个说法试试？"
-                else:
-                    # 注入 store_id 变量（如果用户是门店店长/店员）
-                    if store_id:
-                        vars_dict["store"] = store_id
-                    
-                    # SDB SDK 参数化查询可能不兼容 $变量，直接字符串替换
-                    for k, v in vars_dict.items():
-                        sql = sql.replace(f"${k}", str(v))
-                    
-                    log.info(f"  {msg_id} sql={sql[:120]}")
-
-                    # 去掉 SQL 中的 ```sql ``` 标记
-                    sql = re.sub(r"```(?:sql)?\s*", "", sql).strip()
-                    sql = sql.rstrip("```").strip()
-
-                    try:
-                        db_result = await db.query(sql)
-                        rows = _extract_rows(db_result)
-                        log.info(f"  {msg_id} SQL 结果: {len(rows)} 行")
-
-                        if intent == "query":
-                            # ── Step 2: LLM 格式化 ──
-                            rows_json = json.dumps(rows[:50], ensure_ascii=False, default=str)  # 最多 50 行
-                            step2_msg = (
-                                f"用户的原始问题: {user_input}\n\n"
-                                f"SQL 查询结果 (共 {len(rows)} 条):\n{rows_json}\n\n"
-                                f"请用自然语言格式化展示这些结果。如果数据超过 10 条请选重要的列。"
-                            )
-                            formatted = await call_llm(step1_prompt, step2_msg, temp=0.5)
-                            final_response = formatted
-                            final_actions = parse_actions_from_response(formatted)
-                        else:
-                            # action 类型
-                            final_response = f"✅ 操作完成。影响了 {len(rows) if rows else '?'} 条记录。"
-                    except Exception as db_err:
-                        log.error(f"  {msg_id} SQL 执行失败: {db_err}")
-                        final_response = f"查询出错了: {str(db_err)[:200]}。可能是表名或字段名不对，请换个说法试试。"
-            else:
-                final_response = response1.split("```")[0].strip()
-
-            # ── 回写 ──
-            await db.query(
-                "UPDATE $msg_id SET response = $resp, actions = $acts, status = 'done', processed_at = time::now();",
-                {"msg_id": msg_id, "resp": final_response, "acts": final_actions},
-            )
-            log.info(f"完成 {msg_id}")
-
-        except Exception as e:
-            log.error(f"处理 {msg_id} 失败: {e}")
             try:
+                await db.query(f"UPDATE {record_id} SET status = 'processing';")
+
+                # ── 用户上下文 ──
+                user = await get_user_info(db, created_by) if created_by else {}
+                role = user.get("current_role")
+                store_id = await get_user_store(db, created_by) if created_by else None
+
+                # ── Step 1: LLM 生成 SQL ──
+                step1_prompt = get_cached_prompt(role)
+                step1_msg = user_input
+                if store_id:
+                    step1_msg = (
+                        f"当前用户绑定的门店: {store_id}\n\n"
+                        f"用户名: {user.get('name', '未知')}\n"
+                        f"用户消息: {user_input}"
+                    )
+                # 也把用户角色注入
+                step1_msg = f"[用户角色: {role or '未知'}]\n{step1_msg}"
+
+                response1 = await call_llm(step1_prompt, step1_msg, temp=0.1)
+                plan = parse_json_from_response(response1)
+                intent = plan.get("intent", "chat")
+
+                log.info(f"  {msg_id} intent={intent} sql={str(plan.get('sql',''))[:80]}")
+
+                final_response = ""
+                final_actions = []
+
+                if intent == "chat":
+                    # 纯聊天，直接返回
+                    final_response = response1.split("```")[0].strip()
+                    # 从 Step1 回复中提取 actions
+                    final_actions = parse_actions_from_response(response1)
+
+                elif intent in ("query", "action"):
+                    sql = plan.get("sql", "")
+                    vars_dict = plan.get("vars", {})
+
+                    if not sql:
+                        final_response = "抱歉，我无法理解这个查询。请换个说法试试？"
+                    else:
+                        # 注入 store_id 变量（如果用户是门店店长/店员）
+                        if store_id:
+                            vars_dict["store"] = store_id
+
+                        # SDB SDK 参数化查询可能不兼容 $变量，直接字符串替换
+                        for k, v in vars_dict.items():
+                            sql = sql.replace(f"${k}", str(v))
+
+                        log.info(f"  {msg_id} sql={sql[:120]}")
+
+                        # 去掉 SQL 中的 ```sql ``` 标记
+                        sql = re.sub(r"```(?:sql)?\s*", "", sql).strip()
+                        sql = sql.rstrip("```").strip()
+
+                        try:
+                            db_result = await db.query(sql)
+                            rows = _extract_rows(db_result)
+                            log.info(f"  {msg_id} SQL 结果: {len(rows)} 行")
+
+                            if intent == "query":
+                                # ── Step 2: LLM 格式化 ──
+                                rows_json = json.dumps(rows[:50], ensure_ascii=False, default=str)  # 最多 50 行
+                                step2_msg = (
+                                    f"用户的原始问题: {user_input}\n\n"
+                                    f"SQL 查询结果 (共 {len(rows)} 条):\n{rows_json}\n\n"
+                                    f"请用自然语言格式化展示这些结果。如果数据超过 10 条请选重要的列。"
+                                )
+                                formatted = await call_llm(step1_prompt, step2_msg, temp=0.5)
+                                final_response = formatted
+                                final_actions = parse_actions_from_response(formatted)
+                            else:
+                                # action 类型
+                                final_response = f"✅ 操作完成。影响了 {len(rows) if rows else '?'} 条记录。"
+                        except Exception as db_err:
+                            log.error(f"  {msg_id} SQL 执行失败: {db_err}")
+                            final_response = f"查询出错了: {str(db_err)[:200]}。可能是表名或字段名不对，请换个说法试试。"
+                else:
+                    final_response = response1.split("```")[0].strip()
+
+                # ── 回写 ──
                 await db.query(
-                    "UPDATE $msg_id SET response = $err, status = 'error', processed_at = time::now();",
-                    {"msg_id": msg_id, "err": f"处理失败: {str(e)[:500]}"},
+                    "UPDATE $rec SET response = $resp, actions = $acts, status = 'done', processed_at = time::now();",
+                    {"rec": record_id, "resp": final_response, "acts": final_actions},
                 )
-            except Exception:
-                log.error(f"连回写错误都失败了: {msg_id}")
+                log.info(f"完成 {msg_id}")
+
+            except Exception as e:
+                log.error(f"处理 {msg_id} 失败: {e}")
+                try:
+                    await db.query(
+                        "UPDATE $rec SET response = $err, status = 'error', processed_at = time::now();",
+                        {"rec": record_id, "err": f"处理失败: {str(e)[:500]}"},
+                    )
+                except Exception:
+                    log.error(f"连回写错误都失败了: {msg_id}")
+    finally:
+        async with _proc_lock:
+            _processing.discard(msg_id)
 
 
 # ── 主循环 ──
@@ -286,6 +311,10 @@ async def run_agent(db: AsyncSurreal, sem: asyncio.Semaphore):
             async def on_msg(message: dict):
                 data = message.get("result", message)
                 if isinstance(data, dict) and data.get("status") == "pending":
+                    mid = str(data.get("id", ""))
+                    async with _proc_lock:
+                        if mid in _processing:
+                            return
                     asyncio.create_task(process_message(db, data, sem))
 
             await db.subscribe_live(live_id, on_msg)
@@ -298,6 +327,10 @@ async def run_agent(db: AsyncSurreal, sem: asyncio.Semaphore):
                     )
                     for m in _extract_rows(result):
                         if isinstance(m, dict):
+                            mid = str(m.get("id", ""))
+                            async with _proc_lock:
+                                if mid in _processing:
+                                    continue
                             asyncio.create_task(process_message(db, m, sem))
                 except Exception as e2:
                     log.error(f"轮询错误: {e2}")
