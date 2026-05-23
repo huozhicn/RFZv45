@@ -148,6 +148,10 @@ export default function ChatPanel({ tableRefs, currentTable, detailCtrl }: Props
 
   // ── agent response ──
 
+  // 用 ref 存 detailCtrl，避免 useCallback 依赖变化导致 useEffect 重订阅
+  const detailCtrlRef = useRef(detailCtrl)
+  detailCtrlRef.current = detailCtrl
+
   const handleAgentResponse = useCallback((row: AgentMessage) => {
     setMessages(prev => {
       // 去重：同一 agent 消息不重复添加
@@ -162,10 +166,10 @@ export default function ChatPanel({ tableRefs, currentTable, detailCtrl }: Props
       }]
     })
     dispatchActions(row.actions || [], {
-      router: null as any, tableRefs: tableRefs.current, detailRef: detailCtrl,
+      router: null as any, tableRefs: tableRefs.current, detailRef: detailCtrlRef.current,
     })
     setTimeout(scrollBottom, 100)
-  }, [tableRefs, detailCtrl])
+  }, [])  // 空依赖 — 不随 props 变化重建
 
   useEffect(() => {
     if (!auth.token) return
