@@ -16,21 +16,22 @@ v45 推翻这个模型。前端从 54 个手写 CRUD 页面砍成 **3 个控件*
 ### 1. SDB = 唯一真相源 + Data Hub
 
 ```
-┌─────────────────────────────────────────────────────┐
-│                   SurrealDB                          │
-│                                                      │
-│  • Schema 定义（表结构、字段类型、枚举、关联）            │
-│  • 业务逻辑（FUNCTION、EVENT）                         │
-│  • 权限系统（PERMISSIONS、ACCESS）                     │
-│  • 对话消息（agent_message 表）                        │
-│  • 消息预处理（fn::agent_payload）                     │
-│  • 实时推送（LIVE QUERY）                              │
-│                                                      │
-│        ↗ Admin 前端（只读 + 展示）                      │
-│        ↗ H5 用户端（只读 + 展示）                       │
-│        ↗ Hermes Agent（理解意图 + 执行操作）            │ 
-│        ↗ 外部系统（Webhook、API）                       │
-└─────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────┐
+│                      SurrealDB                           │
+│                                                          │
+│  • Schema 定义（表结构、字段类型、枚举、关联）               │
+│  • 菜单定义（-- @label / -- @group 注释）                  │
+│  • 业务逻辑（FUNCTION、EVENT）                             │
+│  • 权限系统（PERMISSIONS、ACCESS）                         │
+│  • 对话消息（agent_message 表）                            │
+│  • 消息预处理（fn::agent_payload）                         │
+│  • 实时推送（LIVE QUERY）                                  │
+│                                                          │
+│        ↗ Admin 前端（只读 + 展示）                          │
+│        ↗ H5 用户端（只读 + 展示）                           │
+│        ↗ Hermes Agent（理解意图 + 执行操作）                │
+│        ↗ 外部系统（Webhook、API）                           │
+└─────────────────────────────────────────────────────────┘
 ```
 
 Schema 文件（.surql）是唯一被修改的源文件。所有变更先改 schema、commit、再导入 VPS。
@@ -84,7 +85,7 @@ Agent 返回的不是纯文本，是**操作序列**：
 
 ### 1. SchemaTable
 
-零配置表格。启动时调 `INFO FOR DB`，拿到所有表的字段定义、类型、断言。
+零配置表格。启动时加载 build-time schema snapshot（`schema-snapshot.json`），拿到所有表的字段定义、类型、断言。
 
 | SDB 类型 | 表格行为 |
 |----------|---------|
@@ -131,6 +132,59 @@ record<T>  → Select（异步搜索关联表）
 | 「书院旗舰店库存低于 5」 | `navigate` + `filter` + `highlight` |
 | 「上月销售额」 | `data` 卡片（不导航，直接展示） |
 | 「把这条订单取消」 | `confirm → 执行 UPDATE → refresh` |
+
+---
+
+## 菜单系统
+
+侧栏菜单从 schema 注释自动生成，不是手写路由列表。
+
+### 注释格式
+
+在 .surql 中每张表定义前添加：
+
+```sql
+-- @label 产品SPU
+-- @group product
+DEFINE TABLE product SCHEMAFULL ...;
+```
+
+### 生成流程
+
+```bash
+npm run menu-config   # 解析 .surql → src/lib/menu-config.json
+```
+
+`scripts/extract-menu.ts` 遍历 schema/ 下所有 .surql，提取 `@label`/`@group`，按 GROUP_ORDER 排序输出 JSON。
+
+### 8 个业务分组
+
+| 分组 key | 中文名 | 表数 | 包含的表 |
+|----------|--------|------|---------|
+| org | 组织架构 | 6 | user, tenant, membership, organization, store, warehouse |
+| product | 商品管理 | 4 | product_category, product, product_variant, tenant_product_selection |
+| inventory | 库存物流 | 8 | inbound, outbound, consignment_location, consignment_stock, consignment_check, store_inventory, restock_request, inventory_count |
+| crm | 客户管理 | 5 | customer, contact, h5_user, communication_log, demand |
+| order | 交易订单 | 6 | sales_order, order_item, cart, transaction, purchase_order, purchase_order_item |
+| marketing | 活动运营 | 8 | dharma_event, event_material, activity, registration, sales_campaign, campaign_target, banner, home_recommendation |
+| finance | 分润结算 | 4 | commission_setting, commission_record, settlement, account |
+| service | 售后服务 | 5 | product_return, favorite, service_binding, sop_task, document |
+
+### 交互行为
+
+- 点击分组标题：展开/收起该组，▼ 箭头旋转
+- 点击表名：导航到 `/tables/:tableName`
+- 当前表高亮：蓝色背景 + 右侧蓝色竖线
+- 点击表时自动展开所在分组
+- 分组默认全部展开
+
+### i18n 基础
+
+`@label` 注解天然是多语言 key。扩展 `extract-menu.ts` 输出多语言映射即可：
+```json
+{ "key": "product", "label": { "zh": "产品SPU", "en": "Product SPU" } }
+```
+前端根据 locale 选择对应语言，不改 .surql。
 
 ---
 
@@ -205,16 +259,17 @@ type AgentResponse = {
 
 | | v4 | v45 |
 |---|---|---|
+| 前端框架 | Vue 3 + NaiveUI | React 19 + 纯 CSS |
 | 前端页面 | 54 个手写 .vue 文件 | 3 个控件 |
 | SQL 位置 | 散落在每个 .vue 里 | Agent 生成 |
 | 路由 | 手写 50+ 条 | `/tables/:tableName` |
-| 菜单 | 手写角色过滤 | 从 PERMISSIONS 自动生成 |
+| 菜单 | 手写角色过滤 | `-- @label`/`-- @group` 注释自动生成 |
 | 表单 | 每个页面手写控件+校验 | 从 schema 字段类型自动映射 |
 | 枚举值 | 前端和后端各写一遍 | ASSERT 定义 → 自动提取 |
 | 权限 | auth.ts canCreate 硬编码 | SDB PERMISSIONS 驱动 |
-| 部署 | shell 脚本引号地狱 | 代码量砍 90% |
 | 数据入口 | 表单 | 对话 |
 | 追溯性 | created_by 字段 | 全对话链路可查 |
+| 部署路径 | /var/www/admin/ | /var/www/v45-admin/（Caddy /v45/*） |
 
 ---
 
@@ -222,16 +277,16 @@ type AgentResponse = {
 
 ```
 RFZv45/
-├── DESIGN.md              ← 本文件
-├── AGENTS.md              ← Agent 工作指令
-├── README.md              ← 项目说明
-├── schema/                ← SDB schema（唯一真相源）
+├── DESIGN.md                    ← 本文件
+├── AGENTS.md                    ← Agent 工作指令
+├── schema/                      ← SDB schema（唯一真相源）
 │   ├── 00-init.surql
 │   ├── 01-identity.surql
 │   ├── 02-tenant.surql
 │   ├── 03-product.surql
 │   ├── 04-product-selection.surql
 │   ├── 05-inventory.surql
+│   ├── 05b-store-inventory.surql
 │   ├── 06-order.surql
 │   ├── 07-crm.surql
 │   ├── 08-activity.surql
@@ -245,29 +300,35 @@ RFZv45/
 │   ├── 16-events.surql
 │   ├── 17-permissions.surql
 │   ├── 18-access.surql
-│   ├── 20-agent.surql       ← 新增：agent_message 表 + fn::agent_payload
+│   ├── 20-agent.surql
 │   └── import-schema.sh
-├── admin/                   ← 新 Admin 前端
-│   ├── index.html
+├── admin-react/                 ← React Admin 前端
+│   ├── package.json
 │   ├── vite.config.ts
+│   ├── scripts/
+│   │   └── extract-menu.ts     ← 菜单解析脚本
 │   ├── src/
-│   │   ├── main.ts
-│   │   ├── App.vue
-│   │   ├── controls/
-│   │   │   ├── SchemaTable.vue
-│   │   │   ├── DetailPanel.vue
-│   │   │   └── ChatPanel.vue
+│   │   ├── App.tsx             ← 主布局（含分组侧栏）
+│   │   ├── main.tsx
+│   │   ├── components/
+│   │   │   ├── SchemaTable.tsx
+│   │   │   ├── DetailPanel.tsx
+│   │   │   └── ChatPanel.tsx
 │   │   ├── agent/
-│   │   │   ├── types.ts      ← AgentAction / AgentResponse 类型
-│   │   │   ├── dispatcher.ts ← action 分发器
-│   │   │   └── live-query.ts ← LIVE QUERY 封装
+│   │   │   ├── types.ts
+│   │   │   ├── dispatcher.ts
+│   │   │   └── live-query.ts
 │   │   ├── stores/
-│   │   │   └── auth.ts       ← 从 v4 迁移
+│   │   │   └── auth.tsx
+│   │   ├── pages/
+│   │   │   └── LoginView.tsx
 │   │   └── lib/
-│   │       └── schema.ts     ← INFO FOR DB → 字段映射
-│   └── config/
-│       └── rufazao.ts
+│   │       ├── schema.ts       ← 类型定义 + 菜单加载
+│   │       ├── schema-snapshot.json  ← 构建时字段快照
+│   │       ├── menu-config.json      ← 构建时菜单配置
+│   │       └── sdb.ts          ← SDB 查询封装
+│   └── dist/                   ← 构建产物
 ├── deploy.sh
-└── seeds/                    ← 种子数据
+└── seeds/
     └── 00-bootstrap.surql
 ```

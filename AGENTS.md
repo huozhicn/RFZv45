@@ -16,7 +16,7 @@
 |------|------|------|
 | VPS | 212.64.90.2 | SSH: ubuntu / sFM@0@LhTY#Oi& |
 | SDB | http://127.0.0.1:8000 | root/root, ns=huozhi, db=rfzv45 |
-| Admin | https://admin.rufazao.com | Caddy → 前端静态文件 |
+| Admin | https://admin.rufazao.com/v45 | Caddy handle_path /v45 → /var/www/v45-admin |
 | Hermes Webhook | http://localhost:PORT/webhooks/rfzv4-chat | Agent 接收消息的端点 |
 
 ---
@@ -33,6 +33,33 @@
 ```
 
 详细设计见 `DESIGN.md`。
+
+---
+
+## 菜单系统
+
+侧栏菜单从 schema 注释自动生成。每张表定义前标注：
+
+```sql
+-- @label 产品SPU
+-- @group product
+DEFINE TABLE product SCHEMAFULL ...;
+```
+
+8 个分组（按 `scripts/extract-menu.ts` 中 GROUP_ORDER 排序）：
+
+| 分组 key | 中文名 | 表数 |
+|----------|--------|------|
+| org | 组织架构 | 6 |
+| product | 商品管理 | 4 |
+| inventory | 库存物流 | 8 |
+| crm | 客户管理 | 5 |
+| order | 交易订单 | 6 |
+| marketing | 活动运营 | 8 |
+| finance | 分润结算 | 4 |
+| service | 售后服务 | 5 |
+
+新增/改名表 → 在对应 .surql 加 `-- @label` / `-- @group` → 跑 `npm run menu-config` → 提交生成的 `src/lib/menu-config.json`。
 
 ---
 
@@ -104,24 +131,28 @@ UPDATE agent_message SET
 WHERE id = $msg_id;
 ```
 
-Agent actions 完整类型定义见 `admin/src/agent/types.ts`。
+Agent actions 完整类型定义见 `admin-react/src/agent/types.ts`。
 
 ---
 
 ## 前端开发原则
 
-1. **不要手写表格列定义** → 从 `INFO FOR DB` 自动生成
+1. **不要手写表格列定义** → 从 schema-snapshot.json 自动生成
 2. **不要手写 SQL** → Agent 生成
 3. **不要手写路由** → 统一 `/tables/:tableName`
 4. **不要手写权限判断** → SDB PERMISSIONS 自动过滤
 5. **不要手写枚举选项** → 从 ASSERT 自动提取
+6. **不要手写菜单** → 从 `-- @label` / `-- @group` 注释自动生成
 
 ---
 
 ## 构建部署
 
 ```bash
-cd admin && npm run build     # 构建前端
-bash deploy.sh                # 部署到 VPS
-bash schema/import-schema.sh  # 导入 schema（在 VPS 上执行）
+cd admin-react && npm run build   # 构建前端（React + Vite）
+bash deploy.sh                    # 部署到 VPS /var/www/v45-admin/
+bash schema/import-schema.sh      # 导入 schema（在 VPS 上执行）
+
+# 菜单配置有变更时
+cd admin-react && npm run menu-config  # 重新生成 menu-config.json
 ```

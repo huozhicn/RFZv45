@@ -23,6 +23,7 @@ interface AuthState {
   isAuthenticated: boolean
   login: (username: string, password: string) => Promise<void>
   logout: () => void
+  changePassword: (oldPassword: string, newPassword: string) => Promise<void>
 }
 
 const STORAGE_KEY = 'rfzv4-auth'
@@ -88,8 +89,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     clearStorage()
   }, [])
 
+  const changePassword = useCallback(async (oldPassword: string, newPassword: string) => {
+    if (!user || !token) throw new Error('未登录')
+    // Hash and update via SDB
+    await sdbQuery(
+      `UPDATE ${user.id} SET password_hash = crypto::argon2::generate($newPass)`,
+      { newPass: newPassword },
+      token
+    )
+  }, [user, token])
+
   return (
-    <AuthContext.Provider value={{ user, token, memberships, currentTenantId, currentRole, isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ user, token, memberships, currentTenantId, currentRole, isAuthenticated, login, logout, changePassword }}>
       {children}
     </AuthContext.Provider>
   )

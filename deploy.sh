@@ -15,15 +15,15 @@ echo "  RFZv45 部署 → ${VPS_USER}@${VPS_IP}"
 echo "════════════════════════════════════════"
 echo ""
 
-cd admin
+cd admin-react
 
 echo "  构建中..."
 npm run build 2>&1 | tail -3
 
-# 先清空 VPS assets，再上传
+# 全量清空 VPS 目录（解决旧 hash 文件残留导致不同步）
 echo "  上传到 /var/www/v45-admin/..."
 sshpass -p "${VPS_PASS}" ssh -o StrictHostKeyChecking=no "${VPS_USER}@${VPS_IP}" \
-  "rm -rf /var/www/v45-admin/assets/*" 2>/dev/null
+  "rm -rf /var/www/v45-admin/*"
 sshpass -p "${VPS_PASS}" scp -o StrictHostKeyChecking=no -r dist/* "${VPS_USER}@${VPS_IP}:/var/www/v45-admin/"
 
 # 版本验证
@@ -40,5 +40,5 @@ cd ..
 echo ""
 echo "════════════════════════════════════════"
 echo "  部署完成"
-echo "  Admin: https://admin.rufazao.com"
+echo "  Admin: https://admin.rufazao.com/v45"
 echo "════════════════════════════════════════"
