@@ -11,7 +11,7 @@ interface ChatMsg {
   role: 'user' | 'agent'
   text: string
   attachments?: Attachment[]
-  status: 'pending' | 'done' | 'error'
+  status: 'pending' | 'sent' | 'done' | 'error'
   actions: AgentAction[]
   timestamp: string
 }
@@ -98,7 +98,7 @@ export default function ChatPanel({ tableRefs, currentTable, detailCtrl }: Props
       )
       setMessages(prev => [...prev, {
         id: result?.[0]?.id ?? '', role: 'user', text,
-        attachments: [...attachments], status: 'pending',
+        attachments: [...attachments], status: 'sent',
         actions: [], timestamp: new Date().toISOString(),
       }])
       setInputText('')
