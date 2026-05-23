@@ -1,4 +1,6 @@
 OPTION IMPORT;
+-- @label 商品类目
+-- @group product
 DEFINE TABLE product_category SCHEMAFULL CHANGEFEED 30d;
 DEFINE FIELD name        ON product_category TYPE string;
 DEFINE FIELD slug        ON product_category TYPE string;
@@ -6,6 +8,8 @@ DEFINE FIELD description ON product_category TYPE option<string>;
 DEFINE FIELD sort_order  ON product_category TYPE int DEFAULT 0;
 DEFINE INDEX idx_cat_slug ON product_category FIELDS slug UNIQUE;
 
+-- @label 产品SPU
+-- @group product
 DEFINE TABLE product SCHEMAFULL CHANGEFEED 30d;
 DEFINE FIELD name               ON product TYPE string;
 DEFINE FIELD sku                ON product TYPE string;
@@ -42,6 +46,8 @@ DEFINE INDEX idx_product_fts_desc  ON product FIELDS description FULLTEXT ANALYZ
 DEFINE INDEX idx_product_fts_intro ON product FIELDS product_intro FULLTEXT ANALYZER product_search BM25(1.2,0.75);
 
 -- SKU
+-- @label 产品SKU
+-- @group product
 DEFINE TABLE product_variant SCHEMAFULL CHANGEFEED 30d;
 DEFINE FIELD spu        ON product_variant TYPE record<product>;   -- ← record link
 DEFINE FIELD sku        ON product_variant TYPE string;

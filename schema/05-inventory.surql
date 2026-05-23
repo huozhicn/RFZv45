@@ -1,9 +1,13 @@
 OPTION IMPORT;
+-- @label 仓库
+-- @group org
 DEFINE TABLE warehouse SCHEMAFULL;
 DEFINE FIELD name    ON warehouse TYPE string;
 DEFINE FIELD address ON warehouse TYPE option<string>;
 
 -- 入库
+-- @label 入库单
+-- @group inventory
 DEFINE TABLE inbound SCHEMAFULL CHANGEFEED 30d;
 DEFINE FIELD inbound_no    ON inbound TYPE string DEFAULT fn::gen_flow_code("IB", "inbound");
 DEFINE FIELD variant       ON inbound TYPE record<product_variant>;   -- ← record link
@@ -27,6 +31,8 @@ DEFINE INDEX idx_inbound_no ON inbound FIELDS inbound_no UNIQUE;
 DEFINE INDEX idx_inbound_var ON inbound FIELDS variant;
 
 -- 出库
+-- @label 出库单
+-- @group inventory
 DEFINE TABLE outbound SCHEMAFULL CHANGEFEED 30d;
 DEFINE FIELD outbound_no   ON outbound TYPE string DEFAULT fn::gen_flow_code("OB", "outbound");
 DEFINE FIELD variant       ON outbound TYPE record<product_variant>;  -- ← record link
@@ -48,6 +54,8 @@ DEFINE FIELD created_at    ON outbound TYPE datetime DEFAULT time::now();
 DEFINE INDEX idx_outbound_no ON outbound FIELDS outbound_no UNIQUE;
 
 -- 寄售点
+-- @label 寄售点
+-- @group inventory
 DEFINE TABLE consignment_location SCHEMAFULL;
 DEFINE FIELD name          ON consignment_location TYPE string;
 DEFINE FIELD location_type ON consignment_location TYPE string
@@ -58,6 +66,8 @@ DEFINE FIELD address       ON consignment_location TYPE option<string>;
 DEFINE FIELD manager       ON consignment_location TYPE option<record<user>>; -- ← record link
 
 -- 寄售库存
+-- @label 寄售库存
+-- @group inventory
 DEFINE TABLE consignment_stock SCHEMAFULL;
 DEFINE FIELD variant  ON consignment_stock TYPE record<product_variant>;   -- ← record link
 DEFINE FIELD location ON consignment_stock TYPE record<consignment_location>; -- ← record link
@@ -66,6 +76,8 @@ DEFINE FIELD last_check_date ON consignment_stock TYPE option<datetime>;
 DEFINE INDEX idx_cs_var_loc ON consignment_stock FIELDS variant, location UNIQUE;
 
 -- 盘点
+-- @label 寄售盘点
+-- @group inventory
 DEFINE TABLE consignment_check SCHEMAFULL;
 DEFINE FIELD location        ON consignment_check TYPE record<consignment_location>;  -- ← record link
 DEFINE FIELD variant         ON consignment_check TYPE record<product_variant>;       -- ← record link

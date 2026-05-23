@@ -1,4 +1,6 @@
 OPTION IMPORT;
+-- @label 法会活动
+-- @group marketing
 DEFINE TABLE dharma_event SCHEMAFULL;
 DEFINE FIELD event_no    ON dharma_event TYPE string DEFAULT fn::gen_flow_code("DE", "dharma_event");
 DEFINE FIELD title       ON dharma_event TYPE string;
@@ -16,6 +18,8 @@ DEFINE FIELD created_at  ON dharma_event TYPE datetime DEFAULT time::now();
 DEFINE FIELD notes       ON dharma_event TYPE option<string>;
 DEFINE INDEX idx_event_no ON dharma_event FIELDS event_no UNIQUE;
 
+-- @label 法会物资
+-- @group marketing
 DEFINE TABLE event_material SCHEMAFULL;
 DEFINE FIELD _check      ON event_material TYPE bool DEFAULT true
     ASSERT $this.variant IS NOT NONE OR $this.spu IS NOT NONE;

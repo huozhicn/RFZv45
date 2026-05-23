@@ -1,4 +1,6 @@
 OPTION IMPORT;
+-- @label 用户
+-- @group org
 DEFINE TABLE user SCHEMAFULL CHANGEFEED 30d;
 DEFINE FIELD name          ON user TYPE string;
 DEFINE FIELD user_type     ON user TYPE string
@@ -29,6 +31,8 @@ DEFINE INDEX idx_identity ON identity FIELDS platform, platform_id UNIQUE;
 
 
 -- ★ 人事管理：membership 是 user → tenant 的图边（RELATION），边上带人事属性
+-- @label 成员关系
+-- @group org
 DEFINE TABLE membership TYPE RELATION IN user OUT tenant SCHEMAFULL CHANGEFEED 90d;
 
 DEFINE FIELD store       ON membership TYPE option<record<store>>;  -- 门店员工必填，总部员工为空

@@ -1,4 +1,6 @@
 OPTION IMPORT;
+-- @label 运营活动
+-- @group marketing
 DEFINE TABLE activity SCHEMAFULL CHANGEFEED 30d;
 DEFINE FIELD title                ON activity TYPE string;
 DEFINE FIELD description          ON activity TYPE option<string>;
@@ -21,6 +23,8 @@ DEFINE FIELD documents            ON activity TYPE array<record<document>> DEFAU
 DEFINE FIELD created_at           ON activity TYPE datetime DEFAULT time::now();
 DEFINE INDEX idx_activity_tenant  ON activity FIELDS tenant;
 
+-- @label 活动报名
+-- @group marketing
 DEFINE TABLE registration SCHEMAFULL;
 DEFINE FIELD activity     ON registration TYPE record<activity>;    -- ← record link
 DEFINE FIELD h5_user      ON registration TYPE record<h5_user>;     -- ← record link

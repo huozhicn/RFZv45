@@ -1,4 +1,6 @@
 OPTION IMPORT;
+-- @label 首页轮播
+-- @group marketing
 DEFINE TABLE banner SCHEMAFULL;
 DEFINE FIELD tenant     ON banner TYPE record<tenant>;     -- ← record link
 DEFINE FIELD title      ON banner TYPE string;
@@ -10,6 +12,8 @@ DEFINE FIELD sort_order ON banner TYPE int DEFAULT 0;
 DEFINE FIELD is_active  ON banner TYPE bool DEFAULT true;
 DEFINE INDEX idx_banner_tenant ON banner FIELDS tenant;
 
+-- @label 首页推荐
+-- @group marketing
 DEFINE TABLE home_recommendation SCHEMAFULL;
 DEFINE FIELD tenant     ON home_recommendation TYPE record<tenant>;  -- ← record link
 DEFINE FIELD title      ON home_recommendation TYPE string;

@@ -1,5 +1,7 @@
 OPTION IMPORT;
 -- 门店自建产品库存（自建产品发货前在这里追踪）
+-- @label 门店库存
+-- @group inventory
 DEFINE TABLE store_inventory SCHEMAFULL;
 DEFINE FIELD store      ON store_inventory TYPE record<store>;
 DEFINE FIELD variant    ON store_inventory TYPE record<product_variant>;
@@ -11,6 +13,8 @@ DEFINE FIELD updated_at ON store_inventory TYPE datetime DEFAULT time::now();
 DEFINE INDEX idx_si_sv  ON store_inventory FIELDS store, variant, inv_type UNIQUE;
 
 -- 门店补货需求（主动向如法造申请补货）
+-- @label 补货申请
+-- @group inventory
 DEFINE TABLE restock_request SCHEMAFULL;
 DEFINE FIELD request_no  ON restock_request TYPE string DEFAULT fn::gen_flow_code("RR", "restock_request");
 DEFINE FIELD store       ON restock_request TYPE record<store>;
@@ -25,6 +29,8 @@ DEFINE FIELD created_at  ON restock_request TYPE datetime DEFAULT time::now();
 DEFINE INDEX idx_rr_store ON restock_request FIELDS store;
 
 -- 退换货管理（客户退货 + 滞销退货 + 质量问题）
+-- @label 退货单
+-- @group service
 DEFINE TABLE product_return SCHEMAFULL;
 DEFINE FIELD return_no   ON product_return TYPE string DEFAULT fn::gen_flow_code("RT", "product_return");
 DEFINE FIELD return_type ON product_return TYPE string
@@ -45,6 +51,8 @@ DEFINE FIELD created_at   ON product_return TYPE datetime DEFAULT time::now();
 DEFINE INDEX idx_pr_no   ON product_return FIELDS return_no UNIQUE;
 
 -- ★ 采购管理（如法造 → 供应商）
+-- @label 采购订单
+-- @group order
 DEFINE TABLE purchase_order SCHEMAFULL CHANGEFEED 90d;
 DEFINE FIELD po_no         ON purchase_order TYPE string DEFAULT fn::gen_flow_code("PO", "purchase_order");
 DEFINE FIELD supplier      ON purchase_order TYPE record<organization>; -- ← record link 供应商
@@ -59,6 +67,8 @@ DEFINE FIELD created_at    ON purchase_order TYPE datetime DEFAULT time::now();
 DEFINE INDEX idx_po_no     ON purchase_order FIELDS po_no UNIQUE;
 DEFINE INDEX idx_po_supplier ON purchase_order FIELDS supplier;
 
+-- @label 采购明细
+-- @group order
 DEFINE TABLE purchase_order_item SCHEMAFULL;
 DEFINE FIELD order        ON purchase_order_item TYPE record<purchase_order>;    -- ← record link
 DEFINE FIELD variant      ON purchase_order_item TYPE record<product_variant>;   -- ← record link
@@ -72,6 +82,8 @@ DEFINE FIELD notes        ON purchase_order_item TYPE option<string>;
 DEFINE INDEX idx_poi_order ON purchase_order_item FIELDS order;
 
 -- ★ 通用 SOP 任务（机构总部 → 门店）
+-- @label SOP任务
+-- @group service
 DEFINE TABLE sop_task SCHEMAFULL;
 DEFINE FIELD title       ON sop_task TYPE string;
 DEFINE FIELD objective   ON sop_task TYPE option<string>;             -- 任务目标/拜访目的
@@ -102,6 +114,8 @@ DEFINE FIELD created_at  ON sop_task TYPE datetime DEFAULT time::now();
 DEFINE INDEX idx_sop_tenant ON sop_task FIELDS tenant;
 
 -- 盘点结果（sop_task type='盘点' 时的附加明细）
+-- @label 盘点记录
+-- @group inventory
 DEFINE TABLE inventory_count SCHEMAFULL;
 DEFINE FIELD task         ON inventory_count TYPE record<sop_task>;
 DEFINE FIELD store        ON inventory_count TYPE record<store>;

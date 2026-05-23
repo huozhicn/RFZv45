@@ -1,10 +1,14 @@
 OPTION IMPORT;
+-- @label 账户
+-- @group finance
 DEFINE TABLE account SCHEMAFULL;
 DEFINE FIELD name         ON account TYPE string;
 DEFINE FIELD account_type ON account TYPE string
     ASSERT $value IN ['微信商户','银行账户','现金','其他'];
 DEFINE FIELD notes        ON account TYPE option<string>;
 
+-- @label 交易流水
+-- @group order
 DEFINE TABLE transaction SCHEMAFULL CHANGEFEED 30d;
 DEFINE FIELD tx_no        ON transaction TYPE string DEFAULT fn::gen_flow_code("TX", "transaction");
 DEFINE FIELD tx_type      ON transaction TYPE string 
@@ -25,6 +29,8 @@ DEFINE INDEX idx_tx_no    ON transaction FIELDS tx_no UNIQUE;
 DEFINE INDEX idx_tx_order ON transaction FIELDS linked_order;
 
 -- 对账单
+-- @label 对账单
+-- @group finance
 DEFINE TABLE settlement SCHEMAFULL CHANGEFEED 90d;
 DEFINE FIELD settlement_no          ON settlement TYPE string DEFAULT fn::gen_flow_code("STL", "settlement");
 DEFINE FIELD tenant                 ON settlement TYPE record<tenant>;  -- ← record link

@@ -1,4 +1,6 @@
 OPTION IMPORT;
+-- @label 租户机构
+-- @group org
 DEFINE TABLE tenant SCHEMAFULL CHANGEFEED 30d;
 DEFINE FIELD name              ON tenant TYPE string;
 DEFINE FIELD tenant_type       ON tenant TYPE string
@@ -12,6 +14,8 @@ DEFINE FIELD status            ON tenant TYPE string DEFAULT 'active'
 DEFINE FIELD created_at        ON tenant TYPE datetime DEFAULT time::now();
 DEFINE INDEX idx_tenant_name   ON tenant FIELDS name;
 
+-- @label 门店
+-- @group org
 DEFINE TABLE store SCHEMAFULL CHANGEFEED 30d;
 DEFINE FIELD name          ON store TYPE string;
 DEFINE FIELD store_type    ON store TYPE string DEFAULT '标准店'

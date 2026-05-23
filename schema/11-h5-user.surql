@@ -1,4 +1,6 @@
 OPTION IMPORT;
+-- @label C端用户
+-- @group crm
 DEFINE TABLE h5_user SCHEMAFULL;
 DEFINE FIELD wechat_openid ON h5_user TYPE string;
 DEFINE FIELD tenant        ON h5_user TYPE record<tenant>;       -- ★ 租户隔离
@@ -19,6 +21,8 @@ DEFINE INDEX idx_h5u_openid_tenant ON h5_user FIELDS wechat_openid, tenant UNIQU
 DEFINE INDEX idx_h5u_tenant ON h5_user FIELDS tenant;
 
 -- 服务人员绑定
+-- @label 服务绑定
+-- @group service
 DEFINE TABLE service_binding SCHEMAFULL;
 DEFINE FIELD h5_user        ON service_binding TYPE record<h5_user>;   -- ← record link
 DEFINE FIELD service_person ON service_binding TYPE record<user>;      -- ← record link
@@ -27,6 +31,8 @@ DEFINE FIELD created_at     ON service_binding TYPE datetime DEFAULT time::now()
 DEFINE INDEX idx_sb_user    ON service_binding FIELDS h5_user, tenant UNIQUE;
 
 -- 购物车（独立表，因为需要独立查询"哪些购物车含某variant"）
+-- @label 购物车
+-- @group order
 DEFINE TABLE cart SCHEMAFULL;
 DEFINE FIELD h5_user  ON cart TYPE record<h5_user>;          -- ← record link
 DEFINE FIELD tenant   ON cart TYPE record<tenant>;            -- ← record link
@@ -37,6 +43,8 @@ DEFINE FIELD updated_at ON cart TYPE datetime DEFAULT time::now();
 DEFINE INDEX idx_cart_uv ON cart FIELDS h5_user, tenant, variant UNIQUE;
 
 -- 收藏
+-- @label 收藏
+-- @group service
 DEFINE TABLE favorite SCHEMAFULL;
 DEFINE FIELD h5_user       ON favorite TYPE record<h5_user>;          -- ← record link
 DEFINE FIELD variant       ON favorite TYPE record<product_variant>;  -- ← record link

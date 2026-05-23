@@ -1,4 +1,6 @@
 OPTION IMPORT;
+-- @label 销售订单
+-- @group order
 DEFINE TABLE sales_order SCHEMAFULL CHANGEFEED 30d;
 DEFINE FIELD so_no       ON sales_order TYPE string DEFAULT fn::gen_flow_code("SO", "sales_order");
 DEFINE FIELD title       ON sales_order TYPE option<string>;
@@ -26,6 +28,8 @@ DEFINE FIELD created_at  ON sales_order TYPE datetime DEFAULT time::now();
 DEFINE INDEX idx_so_no   ON sales_order FIELDS so_no UNIQUE;
 DEFINE INDEX idx_so_tenant ON sales_order FIELDS tenant;
 
+-- @label 订单明细
+-- @group order
 DEFINE TABLE order_item SCHEMAFULL CHANGEFEED 30d;
 DEFINE FIELD order         ON order_item TYPE record<sales_order>;       -- ← record link
 DEFINE FIELD variant       ON order_item TYPE record<product_variant>;   -- ← record link

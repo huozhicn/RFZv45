@@ -1,4 +1,6 @@
 OPTION IMPORT;
+-- @label 租户选品
+-- @group product
 DEFINE TABLE tenant_product_selection SCHEMAFULL CHANGEFEED 30d;
 DEFINE FIELD tenant       ON tenant_product_selection TYPE record<tenant>;      -- ← record link
 DEFINE FIELD variant      ON tenant_product_selection TYPE record<product_variant>; -- ← record link

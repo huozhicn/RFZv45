@@ -1,4 +1,6 @@
 OPTION IMPORT;
+-- @label 文档
+-- @group service
 DEFINE TABLE document SCHEMAFULL;
 DEFINE FIELD name         ON document TYPE string;                      -- 文件名
 DEFINE FIELD file_url     ON document TYPE string;                      -- 文件路径/URL（必填）

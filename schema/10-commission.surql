@@ -1,4 +1,6 @@
 OPTION IMPORT;
+-- @label 佣金设置
+-- @group finance
 DEFINE TABLE commission_setting SCHEMAFULL;
 DEFINE FIELD _r          ON commission_setting TYPE bool DEFAULT true
     ASSERT $this.self_ratio + $this.donate_ratio <= 1.0;
@@ -9,6 +11,8 @@ DEFINE FIELD donate_target  ON commission_setting TYPE option<record<organizatio
 DEFINE FIELD updated_at     ON commission_setting TYPE datetime DEFAULT time::now();
 DEFINE INDEX idx_cs_sp      ON commission_setting FIELDS service_person UNIQUE;
 
+-- @label 佣金记录
+-- @group finance
 DEFINE TABLE commission_record SCHEMAFULL;
 DEFINE FIELD order            ON commission_record TYPE record<sales_order>;       -- ← record link
 DEFINE FIELD service_person   ON commission_record TYPE record<user>;              -- ← record link
