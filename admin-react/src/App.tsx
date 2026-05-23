@@ -168,6 +168,9 @@ export default function App() {
         </div>
         <div style={{ flex: 1, overflowY: 'auto', paddingBottom: 8 }}>
           {menuGroups.map(group => {
+            const visibleTables = group.tables.filter(t => auth.tablePerms[t.key]?.canSelect !== false)
+            // Hide empty groups
+            if (visibleTables.length === 0) return null
             const isCollapsed = collapsedGroups.has(group.key)
             return (
               <div key={group.key}>
@@ -192,11 +195,11 @@ export default function App() {
                   </span>
                 </div>
                 <div style={{
-                  maxHeight: isCollapsed ? 0 : group.tables.length * 36,
+                  maxHeight: isCollapsed ? 0 : visibleTables.length * 36,
                   overflow: 'hidden',
                   transition: 'max-height 0.25s ease',
                 }}>
-                  {group.tables.map(table => (
+                  {visibleTables.map(table => (
                     <div
                       key={table.key}
                       onClick={() => navigateTable(table.key)}
@@ -242,6 +245,9 @@ export default function App() {
             </span>
             <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {auth.user?.username || '?'}
+            </span>
+            <span style={{ fontSize: 10, color: '#1677ff', background: '#e6f4ff', padding: '1px 6px', borderRadius: 8, marginRight: 4 }}>
+              {auth.currentRole || ''}
             </span>
             <span style={{ fontSize: 10, color: '#aaa' }}>▼</span>
           </div>
@@ -294,6 +300,7 @@ export default function App() {
               tableName={currentTable}
               meta={currentMeta}
               onRowClick={handleRowClick}
+              onCreate={() => detailCtrl.openCreate(currentTable, undefined)}
             />
           ) : (
             <div style={{ textAlign: 'center', padding: '80px 0', color: '#999' }}>

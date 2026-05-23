@@ -8,6 +8,7 @@ interface Props {
   tableName: string
   meta: TableMeta | null
   onRowClick: (recordId: string) => void
+  onCreate?: () => void
 }
 
 export interface TableController {
@@ -50,8 +51,8 @@ function fmtDatetime(val: any): string {
   return m ? `${m[1]} ${m[2]}` : s
 }
 
-const SchemaTable = forwardRef<TableController, Props>(({ tableName, meta, onRowClick }, ref) => {
-  const { token } = useAuth()
+const SchemaTable = forwardRef<TableController, Props>(({ tableName, meta, onRowClick, onCreate }, ref) => {
+  const { token, tablePerms } = useAuth()
   const [rows, setRows] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
   const [searchText, setSearchText] = useState('')
@@ -129,6 +130,11 @@ const SchemaTable = forwardRef<TableController, Props>(({ tableName, meta, onRow
             placeholder="搜索..."
             style={{ width: 240, padding: '8px 12px', border: '1px solid #d9d9d9', borderRadius: 6, fontSize: 14 }}
           />
+          {onCreate && tablePerms[tableName]?.canCreate !== false && (
+            <button onClick={onCreate}
+              style={{ padding: '8px 16px', background: '#1677ff', color: '#fff', border: 'none', borderRadius: 6, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap' }}
+            >+ 新建</button>
+          )}
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 14, color: '#666' }}>
           <button disabled={page <= 1} onClick={() => setPage(p => p - 1)}

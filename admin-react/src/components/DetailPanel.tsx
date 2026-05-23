@@ -15,7 +15,7 @@ interface Props {
 }
 
 export default function DetailPanel({ visible, tableName, meta, recordId, mode, prefill, onClose }: Props) {
-  const { token } = useAuth()
+  const { token, tablePerms } = useAuth()
   const [formData, setFormData] = useState<Record<string, any>>({})
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -170,15 +170,19 @@ export default function DetailPanel({ visible, tableName, meta, recordId, mode, 
           {mode === 'view' ? (
             <>
               <button onClick={onClose} style={btnStyle}>关闭</button>
-              <button onClick={handleDelete} style={{ ...btnStyle, color: '#d93025', borderColor: '#d93025' }}>删除</button>
+              {tablePerms[tableName]?.canDelete !== false && (
+                <button onClick={handleDelete} style={{ ...btnStyle, color: '#d93025', borderColor: '#d93025' }}>删除</button>
+              )}
             </>
           ) : (
             <>
               <button onClick={onClose} style={btnStyle}>取消</button>
-              <button onClick={handleSave} disabled={saving}
-                style={{ ...btnStyle, background: '#1677ff', color: '#fff', borderColor: '#1677ff' }}>
-                {saving ? '保存中...' : '保存'}
-              </button>
+              {(mode === 'create' || tablePerms[tableName]?.canUpdate !== false) && (
+                <button onClick={handleSave} disabled={saving}
+                  style={{ ...btnStyle, background: '#1677ff', color: '#fff', borderColor: '#1677ff' }}>
+                  {saving ? '保存中...' : '保存'}
+                </button>
+              )}
             </>
           )}
         </div>

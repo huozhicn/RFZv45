@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useCallback } from 'react'
 import { sdbSignin, sdbQuery } from '@/lib/sdb'
+import tablePermsData from '@/lib/table-perms.json'
 
 interface UserInfo {
   id: string
@@ -14,6 +15,13 @@ interface Membership {
   tenant_id: string
 }
 
+export interface TablePerm {
+  canSelect: boolean
+  canCreate: boolean
+  canUpdate: boolean
+  canDelete: boolean
+}
+
 interface AuthState {
   user: UserInfo | null
   token: string | null
@@ -21,6 +29,7 @@ interface AuthState {
   currentTenantId: string | null
   currentRole: string | null
   isAuthenticated: boolean
+  tablePerms: Record<string, TablePerm>
   login: (username: string, password: string) => Promise<void>
   logout: () => void
   changePassword: (oldPassword: string, newPassword: string) => Promise<void>
@@ -45,12 +54,36 @@ function loadFromStorage() {
 
 const AuthContext = createContext<AuthState | null>(null)
 
+/** Resolve static permissions against currentRole */
+function resolvePerms(currentRole: string | null): Record<string, TablePerm> {
+  const perms: Record<string, TablePerm> = {}
+  if (!currentRole) return perms
+
+  for (const [tname, tdef] of Object.entries(tablePermsData)) {
+    const hasRole = (roles: string[]) => {
+      if (roles.length === 0) return false
+      if (roles.includes('*')) return true
+      if (roles.length === 1 && roles[0] === '平台管理员' && currentRole === '平台管理员') return true
+      return roles.includes(currentRole)
+    }
+    perms[tname] = {
+      canSelect: hasRole((tdef as any).sel || []),
+      canCreate: hasRole((tdef as any).cre || []),
+      canUpdate: hasRole((tdef as any).upd || []),
+      canDelete: hasRole((tdef as any).del || []),
+    }
+  }
+
+  return perms
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const saved = loadFromStorage()
   const [user, setUser] = useState<UserInfo | null>(saved?.user ?? null)
   const [token, setToken] = useState<string | null>(saved?.token ?? null)
   const [memberships, setMemberships] = useState<Membership[]>(saved?.memberships ?? [])
   const [currentTenantId, setCurrentTenantId] = useState<string | null>(saved?.currentTenantId ?? null)
+  const [tablePerms, setTablePerms] = useState<Record<string, TablePerm>>({})
 
   const currentRole = memberships.find(m => m.tenant_id === currentTenantId)?.role ?? null
   const isAuthenticated = !!user
@@ -78,6 +111,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const tid = currentTenantId || mems[0]?.tenant_id || null
       setCurrentTenantId(tid)
       saveToStorage(userInfo, authToken, mems, tid)
+
+      // ── Resolve table permissions from static map ──
+      const roleToCheck = data?.current_role ?? null
+      setTablePerms(resolvePerms(roleToCheck))
     }
   }, [currentTenantId])
 
@@ -86,12 +123,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setToken(null)
     setMemberships([])
     setCurrentTenantId(null)
+    setTablePerms({})
     clearStorage()
   }, [])
 
   const changePassword = useCallback(async (oldPassword: string, newPassword: string) => {
     if (!user || !token) throw new Error('未登录')
-    // Hash and update via SDB
     await sdbQuery(
       `UPDATE ${user.id} SET password_hash = crypto::argon2::generate($newPass)`,
       { newPass: newPassword },
@@ -100,7 +137,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [user, token])
 
   return (
-    <AuthContext.Provider value={{ user, token, memberships, currentTenantId, currentRole, isAuthenticated, login, logout, changePassword }}>
+    <AuthContext.Provider value={{ user, token, memberships, currentTenantId, currentRole, isAuthenticated, tablePerms, login, logout, changePassword }}>
       {children}
     </AuthContext.Provider>
   )
