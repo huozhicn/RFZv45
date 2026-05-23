@@ -21,7 +21,9 @@ export default function App() {
   const [schemaMeta, setSchemaMeta] = useState<Map<string, TableMeta>>(new Map())
   const [currentTable, setCurrentTable] = useState('')
   const [currentMeta, setCurrentMeta] = useState<TableMeta | null>(null)
-  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set())
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(
+    () => new Set(menuGroups.map(g => g.key)) // 默认全部收起
+  )
 
   // User menu
   const [userMenuOpen, setUserMenuOpen] = useState(false)
@@ -70,17 +72,21 @@ export default function App() {
   // @ts-ignore
   const version: string = __COMMIT_HASH__
 
-  // Auto-expand the group of the current table
+  // Auto-expand only the group of the current table, collapse others
   useEffect(() => {
-    if (!currentTable) return
-    const group = findGroup(currentTable)
-    if (group && collapsedGroups.has(group)) {
-      setCollapsedGroups(prev => {
-        const next = new Set(prev)
-        next.delete(group)
-        return next
-      })
+    if (!currentTable) {
+      // Homepage: collapse all
+      setCollapsedGroups(new Set(menuGroups.map(g => g.key)))
+      return
     }
+    const group = findGroup(currentTable)
+    if (!group) return
+    setCollapsedGroups(prev => {
+      // Only keep current group expanded, collapse all others
+      const next = new Set(menuGroups.map(g => g.key))
+      next.delete(group)
+      return next
+    })
   }, [currentTable])
 
   // Load schema on auth
