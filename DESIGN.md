@@ -175,6 +175,13 @@ record<T>  → Select（异步搜索关联表）
 
 底部常驻对话面板。整个 Admin 的指挥中心：
 
+**输入能力**
+- 多行 textarea（Enter 发送，Shift+Enter 换行）
+- 📎 附件按钮（图片/PDF/CSV/Excel/Word，最多 10 个，缩略图预览可删除）
+- Ctrl+V 粘贴图片自动识别为附件
+
+**Agent 交互**
+
 | 用户输入 | Agent action |
 |----------|-------------|
 | 「看库存」 | `navigate → /tables/store_inventory` |
@@ -225,8 +232,8 @@ npm run menu-config   # 解析 .surql → src/lib/menu-config.json
 - 点击分组标题：展开/收起该组，▼ 箭头旋转
 - 点击表名：导航到 `/tables/:tableName`
 - 当前表高亮：蓝色背景 + 右侧蓝色竖线
-- 点击表时自动展开所在分组
-- 分组默认全部展开
+- 默认全部收起，点表时自动展开并关闭其他分组（始终只有一个分组展开）
+- 回到首页时全部收起
 
 ### i18n 基础
 
@@ -245,7 +252,8 @@ npm run menu-config   # 解析 .surql → src/lib/menu-config.json
 ```sql
 DEFINE TABLE agent_message SCHEMAFULL;
 
-DEFINE FIELD user_input ON agent_message TYPE string;
+DEFINE FIELD user_input  ON agent_message TYPE string;
+DEFINE FIELD attachments ON agent_message TYPE option<array>;
 DEFINE FIELD response    ON agent_message TYPE option<string>;
 DEFINE FIELD actions     ON agent_message TYPE option<array<object>>;
 DEFINE FIELD status      ON agent_message TYPE string 
@@ -373,10 +381,12 @@ RFZv45/
 │   │   ├── pages/
 │   │   │   └── LoginView.tsx
 │   │   └── lib/
-│   │       ├── schema.ts       ← 类型定义 + 菜单加载
+│   │       ├── schema.ts           ← 类型定义 + FIELD_ZH + 菜单加载
+│   │       ├── sdb.ts              ← SDB REST 查询封装
+│   │       ├── markdown.tsx        ← Agent 响应 Markdown 渲染
+│   │       ├── table-registry.ts   ← 表名→查询映射
 │   │       ├── schema-snapshot.json  ← 构建时字段快照
-│   │       ├── menu-config.json      ← 构建时菜单配置
-│   │       └── sdb.ts          ← SDB 查询封装
+│   │       └── menu-config.json      ← 构建时菜单配置
 │   └── dist/                   ← 构建产物
 ├── deploy.sh
 └── seeds/

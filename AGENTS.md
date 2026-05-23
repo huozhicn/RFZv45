@@ -166,7 +166,7 @@ Agent actions 完整类型定义见 `admin-react/src/agent/types.ts`。
 
 ```bash
 cd admin-react && npm run build   # 构建前端（React + Vite）
-bash deploy.sh                    # 部署到 VPS /var/www/v45-admin/
+bash deploy.sh                    # 部署到 VPS /var/www/v45-admin/（从项目根目录执行）
 bash schema/import-schema.sh      # 导入 schema（在 VPS 上执行）
 
 # 菜单配置有变更时
