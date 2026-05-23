@@ -234,7 +234,7 @@ export default function ChatPanel({ tableRefs, currentTable, detailCtrl }: Props
                   background: msg.role === 'user' ? '#e8f0fe' : '#f1f3f4',
                   fontSize: 13, lineHeight: 1.6, wordBreak: 'break-word', overflow: 'hidden',
                 }}>
-                  {msg.status === 'pending' && (
+                  {msg.role === 'agent' && msg.status === 'pending' && (
                     <div className="ruyi-thinking" style={{ marginBottom: 4 }}>
                       <div className="ruyi-typing"><span /><span /><span /></div>
                       如意思考中…
