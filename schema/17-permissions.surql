@@ -26,7 +26,7 @@ ALTER TABLE tenant PERMISSIONS
 ALTER TABLE store PERMISSIONS
   FOR select WHERE $auth.current_role IN ['经理', '平台管理员'] OR tenant = $auth.current_tenant
   FOR create WHERE $auth.current_role IN ['经理', '平台管理员']
-  FOR update WHERE $auth.current_role IN ['经理', '平台管理员'] OR ($auth.store = id AND $auth.current_role = '门店店长')
+  FOR update WHERE $auth.current_role IN ['经理', '平台管理员'] OR (id IN (SELECT VALUE store FROM membership WHERE in = $auth AND status = 'active') AND $auth.current_role IN ['门店店长', '店员'])
   FOR delete WHERE false
 ;
 
@@ -64,14 +64,15 @@ ALTER TABLE activity PERMISSIONS
 
 -- 补货申请：本门店提 + 经理审
 ALTER TABLE store_inventory PERMISSIONS
-  FOR select WHERE store = $auth.store OR $auth.current_role IN ['经理', '平台管理员']
-  FOR update WHERE store = $auth.store OR $auth.current_role IN ['经理', '平台管理员']
+  FOR select WHERE store IN (SELECT VALUE store FROM membership WHERE in = $auth AND status = 'active') OR $auth.current_role IN ['经理', '平台管理员']
+  FOR create WHERE $auth.current_role IN ['经理', '门店店长', '店员', '平台管理员']
+  FOR update WHERE store IN (SELECT VALUE store FROM membership WHERE in = $auth AND status = 'active') OR $auth.current_role IN ['经理', '平台管理员']
   FOR delete WHERE false
 ;
 
 -- 退换货：本机构
 ALTER TABLE restock_request PERMISSIONS
-  FOR select WHERE store = $auth.store OR $auth.current_role IN ['经理', '平台管理员']
+  FOR select WHERE store IN (SELECT VALUE store FROM membership WHERE in = $auth AND status = 'active') OR $auth.current_role IN ['经理', '平台管理员']
   FOR create WHERE $auth.current_role IN ['经理', '门店店长', '店员', '平台管理员']
   FOR update WHERE $auth.current_role IN ['经理', '平台管理员']
   FOR delete WHERE false
@@ -162,9 +163,9 @@ ALTER TABLE consignment_check PERMISSIONS
 
 -- 采购：仅平台
 ALTER TABLE inventory_count PERMISSIONS
-  FOR select WHERE store = $auth.store OR $auth.current_role IN ['经理', '平台管理员']
+  FOR select WHERE store IN (SELECT VALUE store FROM membership WHERE in = $auth AND status = 'active') OR $auth.current_role IN ['经理', '平台管理员']
   FOR create WHERE $auth.current_role IN ['经理', '门店店长', '店员', '平台管理员']
-  FOR update WHERE store = $auth.store OR $auth.current_role IN ['经理', '平台管理员']
+  FOR update WHERE store IN (SELECT VALUE store FROM membership WHERE in = $auth AND status = 'active') OR $auth.current_role IN ['经理', '平台管理员']
   FOR delete WHERE false
 ;
 
