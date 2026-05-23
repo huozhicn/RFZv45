@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/stores/auth'
 import { sdbQuery } from '@/lib/sdb'
 import type { TableMeta } from '@/lib/schema'
-import { extractEnumValues } from '@/lib/schema'
+import { extractEnumValues, fieldLabel } from '@/lib/schema'
 
 interface Props {
   visible: boolean
@@ -95,7 +95,7 @@ export default function DetailPanel({ visible, tableName, meta, recordId, mode, 
       }}>
         {/* Header */}
         <div style={{ padding: '16px 20px', borderBottom: '1px solid #e8e8e8', fontWeight: 600, fontSize: 16 }}>
-          {mode === 'create' ? `新建 ${tableName}` : '详情'}
+          {mode === 'create' ? `新建 ${meta?.label || tableName}` : '详情'}
         </div>
 
         {/* Body */}
@@ -103,7 +103,7 @@ export default function DetailPanel({ visible, tableName, meta, recordId, mode, 
           {loading ? <div style={{ color: '#999' }}>加载中...</div> : !meta ? null : meta.fields.filter(f => f.name !== 'id').map(field => (
             <div key={field.name} style={{ marginBottom: 14 }}>
               <label style={{ display: 'block', marginBottom: 4, fontSize: 13, color: '#666' }}>
-                {field.comment || field.name}
+                {fieldLabel(field)}
               </label>
               {field.assert && extractEnumValues(field.assert).length > 0 ? (
                 <select

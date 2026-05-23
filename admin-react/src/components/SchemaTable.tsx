@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, forwardRef, useImperativeHandle } fro
 import { useAuth } from '@/stores/auth'
 import { sdbQuery } from '@/lib/sdb'
 import type { TableMeta, FieldMeta } from '@/lib/schema'
-import { extractEnumValues } from '@/lib/schema'
+import { extractEnumValues, fieldLabel } from '@/lib/schema'
 
 interface Props {
   tableName: string
@@ -135,7 +135,7 @@ const SchemaTable = forwardRef<TableController, Props>(({ tableName, meta, onRow
                   padding: '8px 12px', textAlign: 'left', fontWeight: 600,
                   color: '#555', whiteSpace: 'nowrap', minWidth: f.name === 'id' ? 180 : 100
                 }}>
-                  {f.comment || f.name}
+                  {fieldLabel(f)}
                 </th>
               ))}
             </tr>
