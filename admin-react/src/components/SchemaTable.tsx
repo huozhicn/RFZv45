@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, forwardRef, useImperativeHandle } fro
 import { useAuth } from '@/stores/auth'
 import { sdbQuery } from '@/lib/sdb'
 import type { TableMeta, FieldMeta } from '@/lib/schema'
-import { extractEnumValues, fieldLabel } from '@/lib/schema'
+import { extractEnumValues, fieldLabel, visibleFields } from '@/lib/schema'
 
 interface Props {
   tableName: string
@@ -56,6 +56,7 @@ const SchemaTable = forwardRef<TableController, Props>(({ tableName, meta, onRow
       const text = searchText.trim()
       let where = ''
       let vars: Record<string, unknown> | undefined
+      const { fetchClause } = meta ? visibleFields(meta) : { fetchClause: '' }
       if (text && meta) {
         const stringFields = meta.fields.filter(f => f.kind.includes('string') || f.kind.includes('text'))
         if (stringFields.length > 0) {
@@ -70,7 +71,7 @@ const SchemaTable = forwardRef<TableController, Props>(({ tableName, meta, onRow
       const countResult = await sdbQuery(countSql, vars, token)
       setTotalCount(countResult?.[0]?.count ?? 0)
 
-      const dataSql = `SELECT * FROM ${tableName} ${where} ORDER BY created_at DESC LIMIT ${PAGE_SIZE} START ${(page - 1) * PAGE_SIZE}`
+      const dataSql = `SELECT * FROM ${tableName} ${fetchClause} ${where} ORDER BY created_at DESC LIMIT ${PAGE_SIZE} START ${(page - 1) * PAGE_SIZE}`
       const data = await sdbQuery(dataSql, vars, token) || []
       setRows(data)
     } catch (err: any) {
@@ -99,6 +100,9 @@ const SchemaTable = forwardRef<TableController, Props>(({ tableName, meta, onRow
   const totalPages = Math.ceil(totalCount / PAGE_SIZE)
 
   if (!meta) return <div style={{ padding: 40, textAlign: 'center', color: '#999' }}>加载中...</div>
+
+  const visibleCols = meta ? visibleFields(meta).fields : []
+  const colSpan = visibleCols.length || 1
 
   return (
     <div>
@@ -130,10 +134,10 @@ const SchemaTable = forwardRef<TableController, Props>(({ tableName, meta, onRow
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
           <thead>
             <tr style={{ background: '#fafafa', borderBottom: '2px solid #e8e8e8' }}>
-              {meta.fields.map(f => (
+              {visibleCols.map(f => (
                 <th key={f.name} style={{
                   padding: '8px 12px', textAlign: 'left', fontWeight: 600,
-                  color: '#555', whiteSpace: 'nowrap', minWidth: f.name === 'id' ? 180 : 100
+                  color: '#555', whiteSpace: 'nowrap',
                 }}>
                   {fieldLabel(f)}
                 </th>
@@ -142,9 +146,9 @@ const SchemaTable = forwardRef<TableController, Props>(({ tableName, meta, onRow
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={meta.fields.length} style={{ padding: 40, textAlign: 'center', color: '#999' }}>加载中...</td></tr>
+              <tr><td colSpan={colSpan} style={{ padding: 40, textAlign: 'center', color: '#999' }}>加载中...</td></tr>
             ) : rows.length === 0 ? (
-              <tr><td colSpan={meta.fields.length} style={{ padding: 40, textAlign: 'center', color: '#bbb' }}>暂无数据</td></tr>
+              <tr><td colSpan={colSpan} style={{ padding: 40, textAlign: 'center', color: '#bbb' }}>暂无数据</td></tr>
             ) : rows.map(row => (
               <tr
                 key={row.id}
@@ -157,7 +161,7 @@ const SchemaTable = forwardRef<TableController, Props>(({ tableName, meta, onRow
                 onMouseEnter={e => { if (!highlighted.includes(row.id)) (e.currentTarget as HTMLElement).style.background = '#f5f5f5' }}
                 onMouseLeave={e => { if (!highlighted.includes(row.id)) (e.currentTarget as HTMLElement).style.background = '' }}
               >
-                {meta.fields.map(f => (
+                {visibleCols.map(f => (
                   <td key={f.name} style={{ padding: '6px 12px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 200 }}>
                     {renderCell(row, f)}
                   </td>

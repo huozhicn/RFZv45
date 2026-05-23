@@ -30,6 +30,58 @@ export interface MenuGroup {
 
 export const menuGroups: MenuGroup[] = menuConfig.groups
 
+// ── Field visibility & ordering ─────────────────────────────────────
+
+/** Fields never shown in table columns */
+const HIDDEN_FIELDS = new Set([
+  'id',
+  'password_hash',
+  'content_embedding',
+])
+
+/** Fields always pushed to the end of columns */
+const LATE_FIELDS = new Set([
+  'created_at',
+  'updated_at',
+  'created_by',
+])
+
+export interface VisibleResult {
+  fields: FieldMeta[]
+  fetchClause: string   // e.g. "FETCH store, warehouse, operator" or ""
+}
+
+/**
+ * Filter and sort table fields for display.
+ * - Hides system/internal fields
+ * - Pushes created_at/updated_at/created_by to the end
+ * - Keeps .surql DEFINE FIELD order for everything else
+ * - Builds FETCH clause for all visible record<> fields
+ */
+export function visibleFields(meta: TableMeta): VisibleResult {
+  const visible = meta.fields
+    .filter(f => !f.name.startsWith('_') && !HIDDEN_FIELDS.has(f.name))
+
+  // Stable sort: move late fields to end, keep original order within groups
+  const early: FieldMeta[] = []
+  const late: FieldMeta[] = []
+  for (const f of visible) {
+    if (LATE_FIELDS.has(f.name)) late.push(f)
+    else early.push(f)
+  }
+
+  // FETCH all visible record fields (so renderCell shows names, not IDs)
+  const fetchTargets = early.concat(late)
+    .filter(f => f.isRecord && f.recordTarget)
+    .map(f => f.name)
+
+  const fetchClause = fetchTargets.length > 0
+    ? `FETCH ${fetchTargets.join(', ')}`
+    : ''
+
+  return { fields: early.concat(late), fetchClause }
+}
+
 const labelMap = new Map<string, { label: string; group: string }>()
 for (const g of menuGroups) {
   for (const t of g.tables) {
