@@ -24,7 +24,7 @@ interface Props {
 
 export default function ChatPanel({ tableRefs, currentTable, detailCtrl }: Props) {
   const auth = useAuth()
-  const sessionId = useRef(`sess_${Date.now()}`)
+  const [sessionId, setSessionId] = useState(`sess_${Date.now()}`)
   const [messages, setMessages] = useState<ChatMsg[]>([])
   const [inputText, setInputText] = useState('')
   const [attachments, setAttachments] = useState<Attachment[]>([])
@@ -91,7 +91,7 @@ export default function ChatPanel({ tableRefs, currentTable, detailCtrl }: Props
         {
           input: text,
           atts: attachments.length > 0 ? attachments : null,
-          sid: sessionId.current,
+          sid: sessionId,
           uid: auth.user?.id ?? '',
         },
         auth.token
@@ -113,6 +113,14 @@ export default function ChatPanel({ tableRefs, currentTable, detailCtrl }: Props
 
   function handleKeydown(e: React.KeyboardEvent) {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() }
+  }
+
+  // ── clear history ──
+
+  function clearHistory() {
+    setMessages([])
+    setAttachments([])
+    setSessionId(`sess_${Date.now()}`)
   }
 
   // ── confirm ──
@@ -156,11 +164,11 @@ export default function ChatPanel({ tableRefs, currentTable, detailCtrl }: Props
 
   useEffect(() => {
     if (!auth.token) return
-    const unsub = subscribeAgentMessages(sessionId.current, (rows) => {
+    const unsub = subscribeAgentMessages(sessionId, (rows) => {
       for (const row of rows) handleAgentResponse(row)
     }, auth.token)
     return unsub
-  }, [auth.token, handleAgentResponse])
+  }, [auth.token, sessionId, handleAgentResponse])
 
   // ── file size helper ──
 
@@ -380,6 +388,21 @@ export default function ChatPanel({ tableRefs, currentTable, detailCtrl }: Props
 
           {/* bottom bar */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            {/* clear button */}
+            <button
+              onClick={clearHistory}
+              title="清空对话"
+              disabled={messages.length === 0}
+              style={{
+                width: 32, height: 32, borderRadius: 8,
+                border: '1px solid #d9d9d9', background: '#fff',
+                fontSize: 14, cursor: messages.length === 0 ? 'not-allowed' : 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: messages.length === 0 ? '#ccc' : '#666',
+                opacity: messages.length === 0 ? 0.4 : 1,
+              }}
+            >🗑️</button>
             {/* attach button */}
             <button
               onClick={() => fileInputRef.current?.click()}
@@ -392,6 +415,7 @@ export default function ChatPanel({ tableRefs, currentTable, detailCtrl }: Props
                 color: '#666',
               }}
             >📎</button>
+          </div>
             <input
               ref={fileInputRef}
               type="file"
