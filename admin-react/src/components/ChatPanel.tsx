@@ -149,13 +149,18 @@ export default function ChatPanel({ tableRefs, currentTable, detailCtrl }: Props
   // ── agent response ──
 
   const handleAgentResponse = useCallback((row: AgentMessage) => {
-    setMessages(prev => [...prev, {
-      id: row.id + '_agent', role: 'agent',
-      text: row.response ?? '',
-      status: (row.status as 'done' | 'error'),
-      actions: row.actions || [],
-      timestamp: row.created_at || '',
-    }])
+    setMessages(prev => {
+      // 去重：同一 agent 消息不重复添加
+      const agentId = row.id + '_agent'
+      if (prev.some(m => m.id === agentId)) return prev
+      return [...prev, {
+        id: agentId, role: 'agent',
+        text: row.response ?? '',
+        status: (row.status as 'done' | 'error'),
+        actions: row.actions || [],
+        timestamp: row.created_at || '',
+      }]
+    })
     dispatchActions(row.actions || [], {
       router: null as any, tableRefs: tableRefs.current, detailRef: detailCtrl,
     })
