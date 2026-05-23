@@ -1,0 +1,31 @@
+# RFZv45 Agent Server 配置
+# 所有密钥、端点、模型选择都在这里，代码不硬编码任何值
+
+# ── SDB 连接 ──
+sdb:
+  url: "wss://admin.rufazao.com/sdb"
+  namespace: "huozhi"
+  database: "rfzv45"
+  username: "root"
+  password: "root"
+
+# ── LLM 提供商 ──
+llm:
+  provider: "deepseek"          # deepseek | openai | siliconflow | custom
+  api_key: ""                   # 从环境变量 DEEPSEEK_API_KEY 读取
+  base_url: "https://api.deepseek.com/v1"
+  model: "deepseek-chat"        # deepseek-chat(V3) | deepseek-reasoner(R1)
+  temperature: 0.3
+  max_tokens: 2000
+
+# ── 提示词目录 ──
+prompts:
+  dir: "prompts"                # 相对于 server/ 目录
+  system: "system.md"           # 系统角色提示词
+  actions: "actions.md"         # action 格式说明
+
+# ── 运行时 ──
+runtime:
+  max_concurrent: 10            # 同时处理的消息数
+  backlog_limit: 20             # 启动时处理的积压消息数
+  poll_fallback_seconds: 2      # subscribe_live 失败时轮询间隔（秒）

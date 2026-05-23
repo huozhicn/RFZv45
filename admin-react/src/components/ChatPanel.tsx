@@ -186,6 +186,24 @@ export default function ChatPanel({ tableRefs, currentTable, detailCtrl }: Props
         borderBottom: '1px solid #e8e8e8', flexShrink: 0, background: '#fafafa',
       }}>💬 对话</div>
 
+      {/* typing animation styles */}
+      <style>{`
+        @keyframes ruyi-bounce {
+          0%, 60%, 100% { transform: translateY(0); opacity: 0.3; }
+          30% { transform: translateY(-6px); opacity: 1; }
+        }
+        @keyframes ruyi-pulse {
+          0%, 100% { opacity: 0.4; }
+          50% { opacity: 1; }
+        }
+        .ruyi-typing { display: inline-flex; align-items: center; gap: 2px; padding: 4px 0; }
+        .ruyi-typing span { width: 5px; height: 5px; border-radius: 50%; background: #1677ff; display: inline-block; }
+        .ruyi-typing span:nth-child(1) { animation: ruyi-bounce 1.2s infinite 0s; }
+        .ruyi-typing span:nth-child(2) { animation: ruyi-bounce 1.2s infinite 0.2s; }
+        .ruyi-typing span:nth-child(3) { animation: ruyi-bounce 1.2s infinite 0.4s; }
+        .ruyi-thinking { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #888; animation: ruyi-pulse 2s infinite; }
+      `}</style>
+
       {/* messages */}
       <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', padding: '12px 16px' }}>
         {messages.length === 0 && (
@@ -208,7 +226,12 @@ export default function ChatPanel({ tableRefs, currentTable, detailCtrl }: Props
                   background: msg.role === 'user' ? '#e8f0fe' : '#f1f3f4',
                   fontSize: 13, lineHeight: 1.6, wordBreak: 'break-word', overflow: 'hidden',
                 }}>
-                  {msg.status === 'pending' && <div style={{ color: '#999', fontSize: 11, marginBottom: 4 }}>⏳ 思考中...</div>}
+                  {msg.status === 'pending' && (
+                    <div className="ruyi-thinking" style={{ marginBottom: 4 }}>
+                      <div className="ruyi-typing"><span /><span /><span /></div>
+                      如意思考中…
+                    </div>
+                  )}
                   {msg.status === 'error' && <div style={{ color: '#d93025', fontSize: 11, marginBottom: 4 }}>⚠ 出错</div>}
                   {msg.role === 'user' ? msg.text : parseMarkdown(msg.text)}
 
