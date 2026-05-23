@@ -27,7 +27,7 @@ function renderCell(row: any, field: FieldMeta): string {
   const val = row[field.name]
   if (val === null || val === undefined) return '-'
   if (field.isRecord && typeof val === 'object' && val !== null) {
-    return val.name || val.id || '-'
+    return val.name || val.sku || val.title || val.display_name || val.id || '-'
   }
   if (field.assert) {
     const enums = extractEnumValues(field.assert)
@@ -57,6 +57,8 @@ const SchemaTable = forwardRef<TableController, Props>(({ tableName, meta, onRow
       let where = ''
       let vars: Record<string, unknown> | undefined
       const { fetchClause } = meta ? visibleFields(meta) : { fetchClause: '' }
+      const orderField = meta?.fields.some(f => f.name === 'created_at') ? 'created_at' : 'id'
+      const orderDir = orderField === 'id' ? 'ASC' : 'DESC'
       if (text && meta) {
         const stringFields = meta.fields.filter(f => f.kind.includes('string') || f.kind.includes('text'))
         if (stringFields.length > 0) {
@@ -71,7 +73,7 @@ const SchemaTable = forwardRef<TableController, Props>(({ tableName, meta, onRow
       const countResult = await sdbQuery(countSql, vars, token)
       setTotalCount(countResult?.[0]?.count ?? 0)
 
-      const dataSql = `SELECT * FROM ${tableName} ${fetchClause} ${where} ORDER BY created_at DESC LIMIT ${PAGE_SIZE} START ${(page - 1) * PAGE_SIZE}`
+      const dataSql = `SELECT * FROM ${tableName} ${where} ORDER BY ${orderField} ${orderDir} LIMIT ${PAGE_SIZE} START ${(page - 1) * PAGE_SIZE} ${fetchClause}`
       const data = await sdbQuery(dataSql, vars, token) || []
       setRows(data)
     } catch (err: any) {
