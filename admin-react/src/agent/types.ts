@@ -95,9 +95,17 @@ export interface AgentResponse {
 
 // ── 新消息（前端 → SDB） ──
 
+export interface Attachment {
+  name: string
+  type: string       // MIME type
+  data: string       // base64
+  size: number       // bytes
+}
+
 export interface AgentMessage {
   id: string
   user_input: string
+  attachments: Attachment[] | null
   response: string | null
   actions: AgentAction[] | null
   status: 'pending' | 'processing' | 'done' | 'error'

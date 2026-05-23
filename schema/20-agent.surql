@@ -15,6 +15,9 @@ DEFINE TABLE agent_message SCHEMAFULL PERMISSIONS
 DEFINE FIELD user_input ON agent_message TYPE string
   COMMENT '用户原始输入（自然语言）';
 
+DEFINE FIELD attachments ON agent_message TYPE option<array>
+  COMMENT '用户附件: [{name, type, data(base64), size}]';
+
 DEFINE FIELD response ON agent_message TYPE option<string>
   COMMENT 'Agent 文字回复';
 
