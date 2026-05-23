@@ -19,13 +19,4 @@ export default defineConfig({
   define: {
     __COMMIT_HASH__: JSON.stringify(GIT_HASH),
   },
-  server: {
-    proxy: {
-      '/sdb': {
-        target: 'https://admin.rufazao.com',
-        changeOrigin: true,
-        secure: false,
-      },
-    },
-  },
 })
