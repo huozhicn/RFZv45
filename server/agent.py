@@ -261,6 +261,57 @@ async def process_message(db: AsyncSurreal, msg: dict, sem: asyncio.Semaphore):
 
 # ── 主循环 ──
 
+async def run_agent(db: AsyncSurreal, sem: asyncio.Semaphore):
+    """单次运行：连接、处理积压、监听"""
+    try:
+        await db.connect()
+        await db.signin({"user": SDB["username"], "pass": SDB["password"]})
+        await db.use(SDB["namespace"], SDB["database"])
+        log.info(f"SDB 已连接: {SDB['url']}")
+
+        # 积压处理
+        result = await db.query(
+            f"SELECT * FROM agent_message WHERE status = 'pending' ORDER BY created_at LIMIT {RT['backlog_limit']};"
+        )
+        backlog = _extract_rows(result)
+        if backlog:
+            log.info(f"积压消息: {len(backlog)} 条")
+            await asyncio.gather(*[process_message(db, m, sem) for m in backlog if isinstance(m, dict)])
+
+        # LIVE SELECT
+        try:
+            live_id = await db.live("LIVE SELECT * FROM agent_message WHERE status = 'pending'")
+            log.info(f"LIVE SELECT: {live_id}")
+
+            async def on_msg(message: dict):
+                data = message.get("result", message)
+                if isinstance(data, dict) and data.get("status") == "pending":
+                    asyncio.create_task(process_message(db, data, sem))
+
+            await db.subscribe_live(live_id, on_msg)
+        except Exception as e:
+            log.warning(f"subscribe_live 失败 ({e})，回退轮询")
+            while True:
+                try:
+                    result = await db.query(
+                        "SELECT * FROM agent_message WHERE status = 'pending' ORDER BY created_at LIMIT 5;"
+                    )
+                    for m in _extract_rows(result):
+                        if isinstance(m, dict):
+                            asyncio.create_task(process_message(db, m, sem))
+                except Exception as e2:
+                    log.error(f"轮询错误: {e2}")
+                    raise  # 不可恢复，触发外层重连
+                await asyncio.sleep(RT["poll_fallback_seconds"])
+
+    except Exception as e:
+        log.error(f"连接断开: {e}")
+        try:
+            await db.close()
+        except Exception:
+            pass
+
+
 async def main():
     log.info(f"如意 Agent v2 启动 | 模型: {LLM['model']} | 并发: {RT['max_concurrent']}")
 
@@ -268,47 +319,20 @@ async def main():
         get_cached_prompt(role)
     log.info(f"提示词缓存就绪 ({len(_prompt_cache)} 个角色)")
 
-    db = AsyncSurreal(SDB["url"])
-    await db.connect()
-    await db.signin({"user": SDB["username"], "pass": SDB["password"]})
-    await db.use(SDB["namespace"], SDB["database"])
-    log.info(f"SDB 已连接: {SDB['url']}")
-
     sem = asyncio.Semaphore(RT["max_concurrent"])
 
-    # 积压处理
-    result = await db.query(
-        f"SELECT * FROM agent_message WHERE status = 'pending' ORDER BY created_at LIMIT {RT['backlog_limit']};"
-    )
-    backlog = _extract_rows(result)
-    if backlog:
-        log.info(f"积压消息: {len(backlog)} 条")
-        await asyncio.gather(*[process_message(db, m, sem) for m in backlog if isinstance(m, dict)])
-
-    # LIVE SELECT
-    try:
-        live_id = await db.live("LIVE SELECT * FROM agent_message WHERE status = 'pending'")
-        log.info(f"LIVE SELECT: {live_id}")
-
-        async def on_msg(message: dict):
-            data = message.get("result", message)
-            if isinstance(data, dict) and data.get("status") == "pending":
-                asyncio.create_task(process_message(db, data, sem))
-
-        await db.subscribe_live(live_id, on_msg)
-    except Exception as e:
-        log.warning(f"subscribe_live 失败 ({e})，回退轮询")
-        while True:
-            try:
-                result = await db.query(
-                    "SELECT * FROM agent_message WHERE status = 'pending' ORDER BY created_at LIMIT 5;"
-                )
-                for m in _extract_rows(result):
-                    if isinstance(m, dict):
-                        asyncio.create_task(process_message(db, m, sem))
-            except Exception as e2:
-                log.error(f"轮询错误: {e2}")
-            await asyncio.sleep(RT["poll_fallback_seconds"])
+    while True:
+        db = AsyncSurreal(SDB["url"])
+        try:
+            await run_agent(db, sem)
+        except Exception as e:
+            log.error(f"运行异常: {e}")
+        try:
+            await db.close()
+        except Exception:
+            pass
+        log.info("5 秒后重连...")
+        await asyncio.sleep(5)
 
 
 if __name__ == "__main__":
