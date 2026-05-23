@@ -7,6 +7,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 MENU_CONFIG = ROOT / "admin-react" / "src" / "lib" / "menu-config.json"
+# 兜底：VPS 部署路径
+if not MENU_CONFIG.exists():
+    MENU_CONFIG = Path(__file__).resolve().parent / "admin-react" / "src" / "lib" / "menu-config.json"
 
 # ── 已知表关系和业务规则 ──
 TABLE_HINTS: dict[str, str] = {
