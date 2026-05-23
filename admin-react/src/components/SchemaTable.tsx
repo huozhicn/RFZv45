@@ -27,6 +27,9 @@ function renderCell(row: any, field: FieldMeta): string {
   const val = row[field.name]
   if (val === null || val === undefined) return '-'
   if (field.isRecord && typeof val === 'object' && val !== null) {
+    if (Array.isArray(val)) {
+      return val.map((v: any) => v.name || v.sku || v.title || v.display_name || v.id || '-').join(', ') || '-'
+    }
     return val.name || val.sku || val.title || val.display_name || val.id || '-'
   }
   if (field.kind === 'datetime') return fmtDatetime(val)

@@ -134,7 +134,9 @@ export default function DetailPanel({ visible, tableName, meta, recordId, mode, 
               ) : field.isRecord ? (
                 <span style={{ fontSize: 13, color: '#888' }}>
                   {typeof formData[field.name] === 'object' && formData[field.name] !== null
-                    ? (formData[field.name] as any).name || (formData[field.name] as any).sku || (formData[field.name] as any).title || String(formData[field.name].id || formData[field.name])
+                    ? Array.isArray(formData[field.name])
+                      ? (formData[field.name] as any[]).map((v: any) => v.name || v.sku || v.title || String(v.id || v)).join(', ') || '-'
+                      : (formData[field.name] as any).name || (formData[field.name] as any).sku || (formData[field.name] as any).title || String(formData[field.name].id || formData[field.name])
                     : String(formData[field.name] ?? '-')}
                 </span>
               ) : field.kind === 'datetime' ? (
