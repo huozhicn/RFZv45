@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/stores/auth'
 import { sdbQuery } from '@/lib/sdb'
 import type { TableMeta } from '@/lib/schema'
-import { extractEnumValues, fieldLabel } from '@/lib/schema'
+import { extractEnumValues, fieldLabel, visibleFields } from '@/lib/schema'
 
 interface Props {
   visible: boolean
@@ -30,7 +30,8 @@ export default function DetailPanel({ visible, tableName, meta, recordId, mode, 
     }
     if (!recordId) return
     setLoading(true)
-    sdbQuery(`SELECT * FROM ${recordId}`, undefined, token)
+    const { fetchClause } = meta ? visibleFields(meta) : { fetchClause: '' }
+    sdbQuery(`SELECT * FROM ${recordId} ${fetchClause}`, undefined, token)
       .then((data: any[]) => {
         if (data?.[0]) setFormData({ ...data[0] })
       })
@@ -100,7 +101,7 @@ export default function DetailPanel({ visible, tableName, meta, recordId, mode, 
 
         {/* Body */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px' }}>
-          {loading ? <div style={{ color: '#999' }}>加载中...</div> : !meta ? null : meta.fields.filter(f => f.name !== 'id').map(field => (
+          {loading ? <div style={{ color: '#999' }}>加载中...</div> : !meta ? null : visibleFields(meta).fields.map(field => (
             <div key={field.name} style={{ marginBottom: 14 }}>
               <label style={{ display: 'block', marginBottom: 4, fontSize: 13, color: '#666' }}>
                 {fieldLabel(field)}
@@ -127,7 +128,7 @@ export default function DetailPanel({ visible, tableName, meta, recordId, mode, 
               ) : field.isRecord ? (
                 <span style={{ fontSize: 13, color: '#888' }}>
                   {typeof formData[field.name] === 'object' && formData[field.name] !== null
-                    ? (formData[field.name] as any).name || String(formData[field.name])
+                    ? (formData[field.name] as any).name || (formData[field.name] as any).sku || (formData[field.name] as any).title || String(formData[field.name].id || formData[field.name])
                     : String(formData[field.name] ?? '-')}
                 </span>
               ) : (
